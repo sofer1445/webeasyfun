@@ -7,7 +7,9 @@ import Contact from './components/Contact';
 import EventPlanning from './components/EventPlanning';
 import SuggestedVenues from './components/SuggestedVenues';
 import ShoppingCart from './components/ShoppingCart';
-import FoodOptions from './components/FoodOptions'; // Import the FoodOptions component
+import FoodOptions from './components/FoodOptions';
+import Attractions from './components/Attractions';
+import Summary from "./components/Summary";
 
 const App = () => {
     const [cartItems, setCartItems] = useState([]);
@@ -26,7 +28,9 @@ const App = () => {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/plan-event" element={<EventPlanning />} />
                 <Route path="/suggested-venues" element={<SuggestedVenues addToCart={handleAddToCart} />} />
-                <Route path="/food-options" element={<FoodOptions addToCart={handleAddToCart} />} /> {/* Add the FoodOptions route */}
+                <Route path="/food-options" element={<FoodOptions addToCart={handleAddToCart} />} />
+                <Route path="/attractions" element={<Attractions addToCart={handleAddToCart} />} />
+                <Route path="/summary" element={<Summary cartItems={cartItems} />} />
             </Routes>
         </Router>
     );

@@ -35,7 +35,7 @@ const FoodOptions = () => {
 
     const handleFoodOptionClick = (foodOption) => {
         handleAddToCart(foodOption);
-        navigate('/next-planning-step');
+        navigate('/attractions');
     };
 
     return (

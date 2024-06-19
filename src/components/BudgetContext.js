@@ -1,4 +1,5 @@
 import React, { createContext, useState } from 'react';
+import Cookies from 'js-cookie';
 
 export const BudgetContext = createContext();
 
@@ -8,7 +9,11 @@ export const BudgetProvider = ({ children }) => {
 
     const handleAddToCart = (item) => {
         setBudget(prevBudget => prevBudget - item.price);
-        setCartItems(prevItems => [...prevItems, item]);
+        setCartItems(prevItems => {
+            const newItems = [...prevItems, item];
+            Cookies.set('cartItems', JSON.stringify(newItems)); // Save cart items to cookies
+            return newItems;
+        });
     };
 
     return (
