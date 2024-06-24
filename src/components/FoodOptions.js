@@ -2,7 +2,11 @@ import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import CardComponent from './CardComponent'; // Import the CardComponent
-import { BudgetContext } from './BudgetContext';
+import { BudgetContext } from '../Context/BudgetContext';
+
+import highBudget from '../images/foods/highbudget_event_Please.jpg';
+import lowBudget from '../images/foods/lowbudget_eventPlease.jpg';
+import mediumBudget from '../images/foods/midbudget_eventPlease.jpg';
 
 const FoodOptionsContainer = styled.div`
     display: flex;
@@ -55,20 +59,20 @@ const fetchFoodOptions = () => {
     return [
         {
             id: 1,
-            name: 'Food Option 1',
-            imageUrl: 'url_to_image_1',
+            name: 'Simple recipes',
+            imageUrl: lowBudget,
             price: 100,
         },
         {
             id: 2,
-            name: 'Food Option 2',
-            imageUrl: 'url_to_image_2',
+            name: 'Blended styles',
+            imageUrl: mediumBudget,
             price: 150,
         },
         {
             id: 3,
-            name: 'Food Option 3',
-            imageUrl: 'url_to_image_3',
+            name: 'Rich gourmet',
+            imageUrl: highBudget,
             price: 200,
         },
     ];

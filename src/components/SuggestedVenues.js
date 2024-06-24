@@ -2,11 +2,11 @@ import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import CardComponent from './CardComponent'; // Import the CardComponent
-import { BudgetContext } from './BudgetContext';
+import { BudgetContext } from '../Context/BudgetContext';
 
-import lowPrice from '../images/lowPrice.jpg';
-import mediumPrice from '../images/mediumPrice.jpg';
-import highPrice from '../images/highPrice.jpg';
+import lowPrice from '../images/venues/lowPrice.jpg';
+import mediumPrice from '../images/venues/mediumPrice.jpg';
+import highPrice from '../images/venues/highPrice.jpg';
 
 const SuggestedVenuesContainer = styled.div`
     display: flex;

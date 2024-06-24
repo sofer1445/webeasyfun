@@ -3,13 +3,16 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { BudgetProvider } from './components/BudgetContext';
+import { BudgetProvider } from './Context/BudgetContext';
+import { UserProvider } from './Context/UserContext'; // ייבוא של UserProvider
 
 const root = document.getElementById('root');
 ReactDOM.createRoot(root).render(
     <React.StrictMode>
         <BudgetProvider>
-            <App />
+            <UserProvider> {/* הוספת UserProvider כמעטפת לאפליקציה */}
+                <App />
+            </UserProvider>
         </BudgetProvider>
     </React.StrictMode>
 );

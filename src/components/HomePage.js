@@ -1,7 +1,8 @@
 import styled from 'styled-components';
 import {Link, useNavigate} from 'react-router-dom';
 import React, { useContext } from 'react';
-import { BudgetContext } from './BudgetContext';
+import { BudgetContext } from '../Context/BudgetContext';
+
 
 const HomePageContainer = styled.div`
     display: flex;
@@ -120,6 +121,7 @@ const HomePage = () => {
                 <NavButton to="/about">About Us</NavButton>
                 <NavButton to="/contact">Contact</NavButton>
                 <NavButton to="/signup">Sign Up</NavButton>
+                <NavButton to="/login">Login</NavButton> {/* כפתור חדש של התחברות */}
             </NavButtons>
         </HomePageContainer>
     );

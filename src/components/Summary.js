@@ -5,11 +5,16 @@ import Cookies from 'js-cookie';
 
 const SummaryContainer = styled.div`
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    flex-wrap: wrap;
     background-color: #f5f5f5;
+    padding: 6rem;
+    overflow-x: auto;
+    transform: scale(0.8);
+    position: relative;
+    left: -50px;
 `;
 
 const Heading = styled.h1`
@@ -17,19 +22,39 @@ const Heading = styled.h1`
     font-weight: bold;
     color: #333;
     margin-bottom: 2rem;
+    text-align: center;
 `;
 
-const SummaryItem = styled.div`
+const SummaryItemContainer = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    background-color: #fff;
+    margin: 1rem;
+    padding: 1rem;
+    border: 1px solid #ddd;
     border-radius: 10px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    width: 80%;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    flex: 1 0 200px; /* Add this line */
+    
+`;
+
+const Image = styled.img`
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+`;
+
+const Name = styled.h2`
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+`;
+
+const Price = styled.p`
+    font-size: 1rem;
+    color: #666;
 `;
 
 const HomeButton = styled.button`
@@ -45,7 +70,7 @@ const HomeButton = styled.button`
 
 const Summary = () => {
     const navigate = useNavigate();
-    const cartItems = JSON.parse(Cookies.get('cartItems') || '[]'); // Get cart items from cookies
+    const cartItems = JSON.parse(Cookies.get('cartItems') || '[]');
 
     const handleHomeClick = () => {
         navigate('/'); // Navigate to home page
@@ -53,13 +78,13 @@ const Summary = () => {
 
     return (
         <SummaryContainer>
-            <Heading>Your Event Summary</Heading>
+            <Heading>Your<br />Event<br />Summary</Heading>
             {cartItems && cartItems.map((item, index) => (
-                <SummaryItem key={index}>
-                    <h2>{item.name}</h2>
-                    <img src={item.imageUrl} alt={item.name} />
-                    <p>Price: {item.price}</p>
-                </SummaryItem>
+                <SummaryItemContainer key={index}>
+                    <Image src={item.imageUrl} alt={item.name} />
+                    <Name>{item.name}</Name>
+                    <Price>Price: {item.price}</Price>
+                </SummaryItemContainer>
             ))}
             <HomeButton onClick={handleHomeClick}>חזור לדף הבית</HomeButton>
         </SummaryContainer>

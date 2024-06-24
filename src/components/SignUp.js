@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import EmailValidation from '../Validation/EmailValidation';
+import PasswordValidation from '../Validation/PasswordValidation'; // ייבוא של PasswordValidation
+
+
 
 const SignUpContainer = styled.div`
   display: flex;
@@ -11,13 +15,13 @@ const SignUpContainer = styled.div`
 `;
 
 const SignUpForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; // שינוי מ-center ל-flex-start
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
 `;
 
 const Input = styled.input`
@@ -47,15 +51,36 @@ const Button = styled.button`
 const SignUp = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [emailError, setEmailError] = useState('');
     const [password, setPassword] = useState('');
+    const [passwordError, setPasswordError] = useState(''); // הוספת מצב לשגיאת סיסמא
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Handle sign up logic here
+        //send to server
+        // const handleSubmit = async (e) => {
+        //     e.preventDefault();
+        //     try {
+        //         const response = await fetch('http://localhost:5000/signup', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //             },
+        //             body: JSON.stringify({ name, email, password }),
+        //         });
+        //         const data = await response.json();
+        //         console.log(data);
+        //     } catch (error) {
+        //         console.error(error);
+        //     }
+        // };
         console.log('Name:', name);
         console.log('Email:', email);
         console.log('Password:', password);
     };
+
+
+
 
     return (
         <SignUpContainer>
@@ -66,17 +91,17 @@ const SignUp = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                 />
-                <Input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                <EmailValidation
+                    email={email}
+                    setEmail={setEmail}
+                    emailError={emailError}
+                    setEmailError={setEmailError}
                 />
-                <Input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                <PasswordValidation // שימוש ב-PasswordValidation
+                    password={password}
+                    setPassword={setPassword}
+                    passwordError={passwordError}
+                    setPasswordError={setPasswordError}
                 />
                 <Button type="submit">Sign Up</Button>
             </SignUpForm>

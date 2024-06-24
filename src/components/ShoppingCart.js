@@ -1,6 +1,6 @@
 import React, {useContext, useState} from 'react';
 import styled from 'styled-components';
-import { BudgetContext } from './BudgetContext';
+import { BudgetContext } from '../Context/BudgetContext';
 import ShoppingCartIcon from '../images/ShoppingCartIcon.jpeg';
 
 const ShoppingCartContainer = styled.div`

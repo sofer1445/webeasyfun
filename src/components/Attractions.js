@@ -2,7 +2,11 @@ import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import CardComponent from './CardComponent'; // Import the CardComponent
-import { BudgetContext } from './BudgetContext';
+import { BudgetContext } from '../Context/BudgetContext';
+
+import lowPrice from '../images/attractions/Low price attraction.jpg';
+import mediumPrice from '../images/attractions/Mid price attraction.jpg';
+import highPrice from '../images/attractions/High price attraction.jpg';
 
 const AttractionsContainer = styled.div`
     display: flex;
@@ -35,20 +39,20 @@ const Attractions = () => {
         return [
             {
                 id: 1,
-                name: 'Attraction 1',
-                imageUrl: 'url_to_image_1',
+                name: 'Vintage backyard games',
+                imageUrl:lowPrice,
                 price: 100,
             },
             {
                 id: 2,
-                name: 'Attraction 2',
-                imageUrl: 'url_to_image_2',
+                name: 'Interactive music experience',
+                imageUrl:mediumPrice,
                 price: 200,
             },
             {
                 id: 3,
-                name: 'Attraction 3',
-                imageUrl: 'url_to_image_3',
+                name: 'Intimate tropical paradise',
+                imageUrl:highPrice,
                 price: 300,
             },
             // Add more attractions as needed
