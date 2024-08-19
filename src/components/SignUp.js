@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import EmailValidation from '../Validation/EmailValidation';
-import PasswordValidation from '../Validation/PasswordValidation'; // ייבוא של PasswordValidation
-
-
+import PasswordValidation from '../Validation/PasswordValidation';
+import { useNavigate } from 'react-router-dom';
 
 const SignUpContainer = styled.div`
   display: flex;
@@ -15,13 +14,13 @@ const SignUpContainer = styled.div`
 `;
 
 const SignUpForm = styled.form`
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; // שינוי מ-center ל-flex-start
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
 `;
 
 const Input = styled.input`
@@ -53,34 +52,29 @@ const SignUp = () => {
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState('');
     const [password, setPassword] = useState('');
-    const [passwordError, setPasswordError] = useState(''); // הוספת מצב לשגיאת סיסמא
+    const [passwordError, setPasswordError] = useState('');
+    const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        //send to server
-        // const handleSubmit = async (e) => {
-        //     e.preventDefault();
-        //     try {
-        //         const response = await fetch('http://localhost:5000/signup', {
-        //             method: 'POST',
-        //             headers: {
-        //                 'Content-Type': 'application/json',
-        //             },
-        //             body: JSON.stringify({ name, email, password }),
-        //         });
-        //         const data = await response.json();
-        //         console.log(data);
-        //     } catch (error) {
-        //         console.error(error);
-        //     }
-        // };
-        console.log('Name:', name);
-        console.log('Email:', email);
-        console.log('Password:', password);
+        try {
+            const response = await fetch(`http://localhost:9125/add-user?username=${name}&password=${password}&mail=${email}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            const data = await response.json();
+            console.log(data);
+
+            // If sign up is successful, redirect to home page
+            if (response.ok) {
+                navigate('/');
+            }
+        } catch (error) {
+            console.error(error);
+        }
     };
-
-
-
 
     return (
         <SignUpContainer>
@@ -97,7 +91,7 @@ const SignUp = () => {
                     emailError={emailError}
                     setEmailError={setEmailError}
                 />
-                <PasswordValidation // שימוש ב-PasswordValidation
+                <PasswordValidation
                     password={password}
                     setPassword={setPassword}
                     passwordError={passwordError}

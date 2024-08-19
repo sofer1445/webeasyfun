@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import HomePage from './components/HomePage';
 import SignUp from './components/SignUp';
@@ -12,9 +12,11 @@ import Attractions from './components/Attractions';
 import Summary from "./components/Summary";
 import Login from "./components/Login";
 import UserProfile from "./components/UserProfile";
+import { UserContext } from './Context/UserContext';
 
 const App = () => {
     const [cartItems, setCartItems] = useState([]);
+    const { user } = useContext(UserContext);
 
     const handleAddToCart = (item) => {
         setCartItems([...cartItems, item]);
@@ -22,7 +24,7 @@ const App = () => {
 
     return (
         <Router>
-            <UserProfile />
+            {user && <UserProfile />}
             <ShoppingCart cartItems={cartItems} /> {/* Remove handleAddToCart from props */}
             <Routes>
                 <Route path="/" element={<HomePage />} />

@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import React, { useContext ,useState} from 'react';
+import { UserContext } from '../Context/UserContext';
+
+
 
 const EventPlanningContainer = styled.div`
   display: flex;
@@ -68,17 +72,68 @@ const EventPlanning = () => {
     const [eventDate, setEventDate] = useState('');
     const [location, setLocation] = useState('');
     const [guests, setGuests] = useState('');
+    const { user } = useContext(UserContext);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
         // Handle event planning form submission logic here
         console.log('Event Type:', eventType);
         console.log('Event Date:', eventDate);
         console.log('Location:', location);
         console.log('Number of Guests:', guests);
 
-        // Navigate to the suggested venues page
-        navigate('/suggested-venues', { state: { eventType, eventDate, location, guests } });
+        // Call the server with the form data
+        const secret = await callUserSecret();
+        console.log('User secret:', secret, user);
+        const response = await fetch(`http://localhost:9125/plan-event?secret=${secret}&typeEvent=${eventType}&date=${eventDate}&location=${location}&guests=${guests}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        });
+
+        if (!response.ok) {
+            console.error('Server call failed:', response);
+        } else {
+            const responseData = await response.json();
+            console.log('Server response:', responseData);
+
+            // Navigate to the suggested venues page
+            navigate('/suggested-venues', { state: { eventType, eventDate, location, guests } });
+        }
+    };
+
+    const callUserSecret = async () => {
+        try {
+            console.log('User:', user);
+            const mail = user.email;
+            console.log('User email:', mail + ",");
+            const response = await fetch(`http://localhost:9125/get-userByMail?mail=${mail}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+
+            if (!response.ok) {
+                console.error('Server call failed:', response.status, response.statusText);
+                return null;
+            }
+
+            const responseData = await response.text();
+            console.log('Server response:', responseData);
+
+            if (!responseData) {
+                console.error('Secret not found in response:', responseData);
+                return null;
+            }
+
+            return responseData;
+        } catch (error) {
+            console.error('Error fetching user secret:', error);
+            return null;
+        }
     };
 
     return (

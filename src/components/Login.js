@@ -1,6 +1,10 @@
 import React, { useContext, useState } from 'react';
 import { UserContext } from '../Context/UserContext';
 import styled from 'styled-components';
+import EmailValidation from '../Validation/EmailValidation';
+import PasswordValidation from '../Validation/PasswordValidation';
+import { useNavigate } from 'react-router-dom';
+import Cookies from "js-cookie";
 
 const LoginContainer = styled.div`
   display: flex;
@@ -21,15 +25,6 @@ const LoginForm = styled.form`
   padding: 2rem;
 `;
 
-const Input = styled.input`
-  width: 100%;
-  padding: 0.8rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-`;
-
 const Button = styled.button`
   background-color: #333;
   color: #fff;
@@ -47,38 +42,54 @@ const Button = styled.button`
 
 const Login = () => {
     const [email, setEmail] = useState('');
+    const [emailError, setEmailError] = useState('');
     const [password, setPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
     const { setUser } = useContext(UserContext);
+    const navigate = useNavigate();
 
     const handleLogin = (userData) => {
         setUser(userData);
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // send to server
+        try {
+            const response = await fetch(`http://localhost:9125/login?mail=${email}&password=${password}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            const data = await response.json();
+            console.log(data);
 
-        console.log('Email:', email);
-        console.log('Password:', password);
+            // If login is successful, redirect to home page
+            if (response.ok) {
+                navigate('/');
+            }
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     return (
         <LoginContainer>
             <LoginForm onSubmit={handleSubmit}>
-                <Input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                <EmailValidation
+                    email={email}
+                    setEmail={setEmail}
+                    emailError={emailError}
+                    setEmailError={setEmailError}
                 />
-                <Input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                <PasswordValidation
+                    password={password}
+                    setPassword={setPassword}
+                    passwordError={passwordError}
+                    setPasswordError={setPasswordError}
                 />
                 <Button type="submit"
-                    onClick={() => handleLogin({ email, password })}>Login</Button>
+                        onClick={() => handleLogin({ email, password })}>Login</Button>
             </LoginForm>
         </LoginContainer>
     );
