@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import CardComponent from './CardComponent'; // Import the CardComponent
+import CardComponent from './CardComponent';
 import { BudgetContext } from '../Context/BudgetContext';
+import { UserContext } from '../Context/UserContext';
 
 import highBudget from '../images/foods/highbudget_event_Please.jpg';
 import lowBudget from '../images/foods/lowbudget_eventPlease.jpg';
@@ -24,7 +25,7 @@ const Heading = styled.h1`
     margin-bottom: 2rem;
 `;
 
-const FoodOptionsList = styled.div`
+const FoodList = styled.div`
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     grid-gap: 2rem;
@@ -33,28 +34,29 @@ const FoodOptionsList = styled.div`
 
 const FoodOptions = () => {
     const { handleAddToCart } = useContext(BudgetContext);
+    const { setFood } = useContext(UserContext);
     const navigate = useNavigate();
 
-    const foodOptions = fetchFoodOptions();
+    const foods = fetchFoodOptions();
 
-    const handleFoodOptionClick = (foodOption) => {
-        handleAddToCart(foodOption);
+    const handleFoodClick = (food) => {
+        setFood(food);
+        handleAddToCart(food);
         navigate('/attractions');
     };
 
     return (
         <FoodOptionsContainer>
             <Heading>Food Options</Heading>
-            <FoodOptionsList>
-                {foodOptions.map((foodOption) => (
-                    <CardComponent key={foodOption.id} item={foodOption} onClick={() => handleFoodOptionClick(foodOption)} />
+            <FoodList>
+                {foods.map((food) => (
+                    <CardComponent key={food.id} item={food} onClick={() => handleFoodClick(food)} />
                 ))}
-            </FoodOptionsList>
+            </FoodList>
         </FoodOptionsContainer>
     );
 };
 
-// Dummy function to fetch or generate the list of food options
 const fetchFoodOptions = () => {
     return [
         {

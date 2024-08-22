@@ -1,24 +1,25 @@
 import React, { createContext, useState } from 'react';
-import Cookies from 'js-cookie';
 
 export const BudgetContext = createContext();
 
 export const BudgetProvider = ({ children }) => {
-    const [budget, setBudget] = useState(0);
+    const [budget, setBudget] = useState(5000); // Example initial budget
     const [cartItems, setCartItems] = useState([]);
 
     const handleAddToCart = (item) => {
-        setBudget(prevBudget => prevBudget - item.price);
-        setCartItems(prevItems => {
-            const newItems = [...prevItems, item];
-            Cookies.set('cartItems', JSON.stringify(newItems)); // Save cart items to cookies
-            return newItems;
-        });
+        setCartItems([...cartItems, item]);
+        setBudget(budget - item.price);
+    };
+
+    const handleRemoveFromCart = (item) => {
+        const updatedCartItems = cartItems.filter(cartItem => cartItem.id !== item.id);
+        setCartItems(updatedCartItems);
+        setBudget(budget + item.price);
     };
 
     return (
-        <BudgetContext.Provider value={{ budget, setBudget, handleAddToCart, cartItems }}>
+        <BudgetContext.Provider value={{ budget, setBudget, cartItems, handleAddToCart, handleRemoveFromCart }}>
             {children}
         </BudgetContext.Provider>
     );
-}
+};

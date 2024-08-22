@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { UserContext } from '../Context/UserContext';
 import styled from 'styled-components';
 
@@ -21,13 +21,24 @@ const UserEmail = styled.p`
     color: #666;
 `;
 
-const UserProfile = () => {
+const CloseButton = styled.button`
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 1rem;
+`;
+
+const UserProfile = ({ onClose }) => {
     const { user } = useContext(UserContext);
 
     return user ? (
         <UserProfileContainer>
             <UserName>Welcome, {user.name}!</UserName>
             <UserEmail>Email: {user.email}</UserEmail>
+            <CloseButton onClick={onClose}>Close</CloseButton>
         </UserProfileContainer>
     ) : (
         <p>Please log in.</p>

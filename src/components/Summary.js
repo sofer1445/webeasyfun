@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
+import { UserContext } from '../Context/UserContext';
 
 const SummaryContainer = styled.div`
     display: flex;
@@ -34,8 +34,7 @@ const SummaryItemContainer = styled.div`
     border: 1px solid #ddd;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    flex: 1 0 200px; /* Add this line */
-    
+    flex: 1 0 200px;
 `;
 
 const Image = styled.img`
@@ -70,7 +69,7 @@ const HomeButton = styled.button`
 
 const Summary = () => {
     const navigate = useNavigate();
-    const cartItems = JSON.parse(Cookies.get('cartItems') || '[]');
+    const { venue, food, attraction } = useContext(UserContext);
 
     const handleHomeClick = () => {
         navigate('/'); // Navigate to home page
@@ -79,13 +78,27 @@ const Summary = () => {
     return (
         <SummaryContainer>
             <Heading>Your<br />Event<br />Summary</Heading>
-            {cartItems && cartItems.map((item, index) => (
-                <SummaryItemContainer key={index}>
-                    <Image src={item.imageUrl} alt={item.name} />
-                    <Name>{item.name}</Name>
-                    <Price>Price: {item.price}</Price>
+            {venue && (
+                <SummaryItemContainer>
+                    <Image src={venue.imageUrl} alt={venue.name} />
+                    <Name>{venue.name}</Name>
+                    <Price>Price: {venue.price}</Price>
                 </SummaryItemContainer>
-            ))}
+            )}
+            {food && (
+                <SummaryItemContainer>
+                    <Image src={food.imageUrl} alt={food.name} />
+                    <Name>{food.name}</Name>
+                    <Price>Price: {food.price}</Price>
+                </SummaryItemContainer>
+            )}
+            {attraction && (
+                <SummaryItemContainer>
+                    <Image src={attraction.imageUrl} alt={attraction.name} />
+                    <Name>{attraction.name}</Name>
+                    <Price>Price: {attraction.price}</Price>
+                </SummaryItemContainer>
+            )}
             <HomeButton onClick={handleHomeClick}>חזור לדף הבית</HomeButton>
         </SummaryContainer>
     );

@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
 import { BudgetContext } from '../Context/BudgetContext';
 import ShoppingCartIcon from '../images/ShoppingCartIcon.jpeg';
@@ -7,18 +7,18 @@ const ShoppingCartContainer = styled.div`
     position: fixed;
     top: 0;
     right: 0;
-    width: 200px; /* Change this line */
+    width: 200px;
     height: 100vh;
     background-color: #f5f5f5;
     padding: 2rem;
     box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
     z-index: 1;
 `;
+
 const CartIcon = styled.img`
     width: 50px;
     height: 50px;
-    animation: ${props => props.cartItems.length > 0 && !props.showCart ? 'blink 1s linear infinite' : 'none'};
-
+    animation: ${props => props.$cartItems.length > 0 && !props.$showCart ? 'blink 1s linear infinite' : 'none'};
     @keyframes blink {
         0% { opacity: 1; }
         50% { opacity: 0; }
@@ -50,6 +50,15 @@ const ItemPrice = styled.p`
     color: #666;
 `;
 
+const RemoveButton = styled.button`
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 5px;
+`;
+
 const RemainingBudget = styled.p`
     font-size: 1.5rem;
     font-weight: bold;
@@ -57,9 +66,8 @@ const RemainingBudget = styled.p`
     margin-top: 2rem;
 `;
 
-
 const ShoppingCart = () => {
-    const { budget, handleAddToCart, cartItems } = useContext(BudgetContext);
+    const { budget, cartItems, handleRemoveFromCart } = useContext(BudgetContext);
     const [showCart, setShowCart] = useState(false);
 
     const handleCartClick = () => {
@@ -68,7 +76,7 @@ const ShoppingCart = () => {
 
     return (
         <ShoppingCartContainer>
-            <CartIcon src={ShoppingCartIcon} alt="Shopping Cart" onClick={handleCartClick} cartItems={cartItems} showCart={showCart} />
+            <CartIcon src={ShoppingCartIcon} alt="Shopping Cart" onClick={handleCartClick} $cartItems={cartItems} $showCart={showCart} />
             {showCart && (
                 <>
                     <Heading>Your Cart</Heading>
@@ -77,6 +85,7 @@ const ShoppingCart = () => {
                         <CartItem key={item.id}>
                             <ItemName>{item.name}</ItemName>
                             <ItemPrice>${item.price}</ItemPrice>
+                            <RemoveButton onClick={() => handleRemoveFromCart(item)}>Remove</RemoveButton>
                         </CartItem>
                     ))}
                     <RemainingBudget>Remaining Budget: ${budget}</RemainingBudget>

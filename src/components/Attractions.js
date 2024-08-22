@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import CardComponent from './CardComponent'; // Import the CardComponent
+import CardComponent from './CardComponent';
 import { BudgetContext } from '../Context/BudgetContext';
+import { UserContext } from '../Context/UserContext';
 
 import lowPrice from '../images/attractions/Low price attraction.jpg';
 import mediumPrice from '../images/attractions/Mid price attraction.jpg';
@@ -33,6 +34,7 @@ const AttractionsList = styled.div`
 
 const Attractions = () => {
     const { handleAddToCart } = useContext(BudgetContext);
+    const { setAttraction } = useContext(UserContext);
     const navigate = useNavigate();
 
     const fetchAttractions = () => {
@@ -40,28 +42,28 @@ const Attractions = () => {
             {
                 id: 1,
                 name: 'Vintage backyard games',
-                imageUrl:lowPrice,
+                imageUrl: lowPrice,
                 price: 100,
             },
             {
                 id: 2,
                 name: 'Interactive music experience',
-                imageUrl:mediumPrice,
+                imageUrl: mediumPrice,
                 price: 200,
             },
             {
                 id: 3,
                 name: 'Intimate tropical paradise',
-                imageUrl:highPrice,
+                imageUrl: highPrice,
                 price: 300,
             },
-            // Add more attractions as needed
         ];
     };
 
-    const attractions = fetchAttractions(); // Call the function to get the array of attractions
+    const attractions = fetchAttractions();
 
     const handleAttractionClick = (attraction) => {
+        setAttraction(attraction);
         handleAddToCart(attraction);
         navigate('/summary');
     };
@@ -70,7 +72,7 @@ const Attractions = () => {
         <AttractionsContainer>
             <Heading>Choose your attractions</Heading>
             <AttractionsList>
-                {attractions.map((attraction) => ( // Use .map() on the array of attractions
+                {attractions.map((attraction) => (
                     <CardComponent key={attraction.id} item={attraction} onClick={() => handleAttractionClick(attraction)} />
                 ))}
             </AttractionsList>

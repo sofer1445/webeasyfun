@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import CardComponent from './CardComponent'; // Import the CardComponent
+import CardComponent from './CardComponent';
 import { BudgetContext } from '../Context/BudgetContext';
+import { UserContext } from '../Context/UserContext';
 
 import lowPrice from '../images/venues/lowPrice.jpg';
 import mediumPrice from '../images/venues/mediumPrice.jpg';
@@ -32,12 +33,14 @@ const VenuesList = styled.div`
 `;
 
 const SuggestedVenues = () => {
-    const { budget, handleAddToCart } = useContext(BudgetContext);
+    const { handleAddToCart } = useContext(BudgetContext);
+    const { setVenue } = useContext(UserContext);
     const navigate = useNavigate();
 
     const venues = fetchSuggestedVenues();
 
     const handleVenueClick = (venue) => {
+        setVenue(venue);
         handleAddToCart(venue);
         navigate('/food-options');
     };
@@ -45,7 +48,6 @@ const SuggestedVenues = () => {
     return (
         <SuggestedVenuesContainer>
             <Heading>Suggested Venues</Heading>
-            <p>Remaining Budget: ${budget}</p> {budget === 0 && <p>Oops! You've run out of budget. Please remove some items from the cart.</p>}
             <VenuesList>
                 {venues.map((venue) => (
                     <CardComponent key={venue.id} item={venue} onClick={() => handleVenueClick(venue)} />
@@ -55,7 +57,6 @@ const SuggestedVenues = () => {
     );
 };
 
-// Dummy function to fetch or generate the list of suggested venues
 const fetchSuggestedVenues = () => {
     return [
         {
