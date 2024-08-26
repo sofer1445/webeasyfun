@@ -4,7 +4,6 @@ import styled from 'styled-components';
 import EmailValidation from '../Validation/EmailValidation';
 import PasswordValidation from '../Validation/PasswordValidation';
 import { useNavigate } from 'react-router-dom';
-import Cookies from "js-cookie";
 
 const LoginContainer = styled.div`
     display: flex;
@@ -62,7 +61,7 @@ const Login = () => {
 
             // If login is successful, redirect to home page
             if (response.ok) {
-                login({ email });
+                login({ email, secret: data.secret });
                 navigate('/');
             }
         } catch (error) {

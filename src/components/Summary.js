@@ -1,7 +1,8 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../Context/UserContext';
+import { EventContext } from '../Context/EventContext';
 
 const SummaryContainer = styled.div`
     display: flex;
@@ -67,9 +68,64 @@ const HomeButton = styled.button`
     margin-top: 2rem;
 `;
 
+const CreateEventButton = styled.button`
+    padding: 1rem 2rem;
+    font-size: 1.5rem;
+    color: #fff;
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 2rem;
+    margin-left: 1rem;
+`;
+
+const sendUserSelections = async (eventId, elements) => {
+    try {
+        const response = await fetch(`http://localhost:9125/save-selection?eventId=${eventId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(elements)
+        });
+
+        if (!response.ok) {
+            console.error('Server call failed:', response);
+        } else {
+            console.log('Selections saved successfully');
+        }
+    } catch (error) {
+        console.error('Error creating event:', error);
+    }
+};
+
 const Summary = () => {
     const navigate = useNavigate();
-    const { venue, food, attraction } = useContext(UserContext);
+    const { user, venue, food, attraction } = useContext(UserContext);
+    const { eventData } = useContext(EventContext);
+    const [secret, setSecret] = useState(null);
+
+    useEffect(() => {
+        console.log('User object:', user); // Log the user object
+        if (user?.secret) {
+            console.log('User secret:', user.secret); // Log the user secret
+            setSecret(user.secret);
+        }
+    }, [user]);
+
+    const handleCreateEvent = () => {
+        if (!secret) {
+            console.error('User secret is not available');
+            return;
+        }
+        if (!eventData || !eventData.eventId) {
+            console.error('Event data or event ID is not available');
+            return;
+        }
+        const elements = [venue?.name, food?.name, attraction?.name].filter(Boolean);
+        sendUserSelections(eventData.eventId, elements);
+    };
 
     const handleHomeClick = () => {
         navigate('/'); // Navigate to home page
@@ -99,7 +155,10 @@ const Summary = () => {
                     <Price>Price: {attraction.price}</Price>
                 </SummaryItemContainer>
             )}
-            <HomeButton onClick={handleHomeClick}>חזור לדף הבית</HomeButton>
+            <div>
+                <HomeButton onClick={handleHomeClick}>חזור לדף הבית</HomeButton>
+                <CreateEventButton onClick={handleCreateEvent}>צור אירוע</CreateEventButton>
+            </div>
         </SummaryContainer>
     );
 };

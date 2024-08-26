@@ -12,8 +12,11 @@ import Attractions from './components/Attractions';
 import Summary from "./components/Summary";
 import Login from "./components/Login";
 import UserProfile from "./components/UserProfile";
+import FloatingChat from "./components/chat/FloatingChat";
 import { UserContext } from './Context/UserContext';
-import styled from 'styled-components';
+import { EventProvider } from './Context/EventContext';
+import styled, { keyframes } from 'styled-components';
+import LogoImgRooster from './images/logo/LogoImgRooster.jpeg';
 
 const ShowProfileButton = styled.button`
     position: fixed;
@@ -27,10 +30,41 @@ const ShowProfileButton = styled.button`
     border-radius: 5px;
 `;
 
+const pulse = keyframes`
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+`;
+
+const Logo = styled.img`
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 100px; /* Adjust size as needed */
+    height: auto;
+    cursor: pointer;
+    border: 2px solid #333;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    animation: ${pulse} 5s infinite; /* Increased duration to 5 seconds */
+    z-index: 1000; /* Ensure the logo appears above other components */
+
+    &:hover {
+        transform: scale(1.1);
+    }
+`;
+
 const App = () => {
     const [cartItems, setCartItems] = useState([]);
     const [showUserProfile, setShowUserProfile] = useState(true);
     const [showEventPlanning, setShowEventPlanning] = useState(true);
+    const [showChat, setShowChat] = useState(false);
     const { user } = useContext(UserContext);
 
     const handleAddToCart = (item) => {
@@ -47,24 +81,36 @@ const App = () => {
         setShowEventPlanning(false);
     };
 
+    const handleLogoClick = () => {
+        setShowChat(true);
+    };
+
+    const handleCloseChat = () => {
+        setShowChat(false);
+    };
+
     return (
-        <Router>
-            {user && showUserProfile && <UserProfile onClose={handleCloseUserProfile} />}
-            {!showUserProfile && <ShowProfileButton onClick={handleShowUserProfile}>Show Profile</ShowProfileButton>}
-            <ShoppingCart cartItems={cartItems} />
-            <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/signup" element={<SignUp />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/about" element={<AboutUs />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/plan-event" element={showEventPlanning ? <EventPlanning /> : null} />
-                <Route path="/suggested-venues" element={<SuggestedVenues addToCart={handleAddToCart} />} />
-                <Route path="/food-options" element={<FoodOptions addToCart={handleAddToCart} />} />
-                <Route path="/attractions" element={<Attractions addToCart={handleAddToCart} />} />
-                <Route path="/summary" element={<Summary cartItems={cartItems} />} />
-            </Routes>
-        </Router>
+        <EventProvider>
+            <Router>
+                {user && showUserProfile && <UserProfile onClose={handleCloseUserProfile} />}
+                {!showUserProfile && <ShowProfileButton onClick={handleShowUserProfile}>Show Profile</ShowProfileButton>}
+                <ShoppingCart cartItems={cartItems} />
+                <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/signup" element={<SignUp />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/about" element={<AboutUs />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/plan-event" element={showEventPlanning ? <EventPlanning /> : null} />
+                    <Route path="/suggested-venues" element={<SuggestedVenues addToCart={handleAddToCart} />} />
+                    <Route path="/food-options" element={<FoodOptions addToCart={handleAddToCart} />} />
+                    <Route path="/attractions" element={<Attractions addToCart={handleAddToCart} />} />
+                    <Route path="/summary" element={<Summary cartItems={cartItems} />} />
+                </Routes>
+                <Logo src={LogoImgRooster} alt="Logo" onClick={handleLogoClick} />
+                {showChat && <FloatingChat onClose={handleCloseChat} />}
+            </Router>
+        </EventProvider>
     );
 };
 

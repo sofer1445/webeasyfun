@@ -1,37 +1,39 @@
 import React from 'react';
 import styled from 'styled-components';
+import BackButtonComponent from '../Styled/BackButton';
 
 const AboutUsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f5f5f5;
 `;
 
 const Heading = styled.h1`
-  font-size: 3rem;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 2rem;
+    font-size: 3rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 2rem;
 `;
 
 const Content = styled.div`
-  max-width: 800px;
-  text-align: center;
-  line-height: 1.6;
+    max-width: 800px;
+    text-align: center;
+    line-height: 1.6;
 `;
 
 const Paragraph = styled.p`
-  font-size: 1.2rem;
-  color: #666;
-  margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 1.5rem;
 `;
 
 const AboutUs = () => {
     return (
         <AboutUsContainer>
+            <BackButtonComponent />
             <Heading>About EventPlan</Heading>
             <Content>
                 <Paragraph>

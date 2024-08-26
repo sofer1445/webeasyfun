@@ -1,9 +1,9 @@
-// src/components/EventPlanning.js
 import React, { useState, useContext } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../Context/UserContext';
 import { BudgetContext } from '../Context/BudgetContext';
+import { EventContext } from '../Context/EventContext';
 
 const EventPlanningContainer = styled.div`
     display: flex;
@@ -66,6 +66,7 @@ const EventPlanning = () => {
     const [guests, setGuests] = useState('');
     const { user } = useContext(UserContext);
     const { budget } = useContext(BudgetContext);
+    const { setEventData } = useContext(EventContext);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -90,11 +91,14 @@ const EventPlanning = () => {
         if (!response.ok) {
             console.error('Server call failed:', response);
         } else {
-            const responseData = await response.json();
-            console.log('Server response:', responseData);
+            const eventId = await response.json();
+            console.log('Event ID:', eventId);
+
+            // Update the Context with the new data
+            setEventData({ eventType, eventDate, location, guests, budget, eventId });
 
             // Navigate to the suggested venues page
-            navigate('/suggested-venues', { state: { eventType, eventDate, location, guests, budget } });
+            navigate('/suggested-venues');
         }
     };
 
