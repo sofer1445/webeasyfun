@@ -1,8 +1,8 @@
-// src/components/HomePage.js
 import React, { useContext, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { BudgetContext } from '../Context/BudgetContext';
+import FloatingChat from "./chat/FloatingChat";
 
 const HomePageContainer = styled.div`
     display: flex;
@@ -68,6 +68,7 @@ const SearchButton = styled.button`
 const NavButtons = styled.div`
     display: flex;
     gap: 1rem;
+    margin-bottom: 2rem; /* הוספת מרווח נוסף לפני הצ'אט */
 `;
 
 const NavButton = styled(Link)`

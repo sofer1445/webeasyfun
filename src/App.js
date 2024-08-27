@@ -1,3 +1,4 @@
+// src/App.js
 import React, { useState, useContext } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import HomePage from './components/HomePage';
@@ -65,6 +66,7 @@ const App = () => {
     const [showUserProfile, setShowUserProfile] = useState(true);
     const [showEventPlanning, setShowEventPlanning] = useState(true);
     const [showChat, setShowChat] = useState(false);
+    const [minimized, setMinimized] = useState(false);
     const { user } = useContext(UserContext);
 
     const handleAddToCart = (item) => {
@@ -82,11 +84,17 @@ const App = () => {
     };
 
     const handleLogoClick = () => {
-        setShowChat(true);
+        if (showChat) {
+            setShowChat(false);
+        } else {
+            setShowChat(true);
+            setMinimized(false);
+        }
     };
 
     const handleCloseChat = () => {
         setShowChat(false);
+        setMinimized(false);
     };
 
     return (
@@ -108,7 +116,7 @@ const App = () => {
                     <Route path="/summary" element={<Summary cartItems={cartItems} />} />
                 </Routes>
                 <Logo src={LogoImgRooster} alt="Logo" onClick={handleLogoClick} />
-                {showChat && <FloatingChat onClose={handleCloseChat} />}
+                {showChat && <FloatingChat onClose={handleCloseChat} minimized={minimized} />}
             </Router>
         </EventProvider>
     );
