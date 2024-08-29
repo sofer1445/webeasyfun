@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import BackButtonComponent from '../Styled/BackButton';
+import BackButtonComponent from '../../Styled/BackButton';
 
 const ContactContainer = styled.div`
     display: flex;

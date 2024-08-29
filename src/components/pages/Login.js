@@ -1,8 +1,8 @@
 import React, { useContext, useState } from 'react';
-import { UserContext } from '../Context/UserContext';
+import { UserContext } from '../../Context/UserContext';
 import styled from 'styled-components';
-import EmailValidation from '../Validation/EmailValidation';
-import PasswordValidation from '../Validation/PasswordValidation';
+import EmailValidation from '../../Validation/EmailValidation';
+import PasswordValidation from '../../Validation/PasswordValidation';
 import { useNavigate } from 'react-router-dom';
 
 const LoginContainer = styled.div`

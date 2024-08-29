@@ -1,8 +1,9 @@
-import React, { useContext, useRef } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { BudgetContext } from '../Context/BudgetContext';
-import FloatingChat from "./chat/FloatingChat";
+import { BudgetContext } from '../../Context/BudgetContext';
+import { UserContext } from '../../Context/UserContext';
+import PersonalArea from '../infoUser/PersonalArea';
 
 const HomePageContainer = styled.div`
     display: flex;
@@ -68,7 +69,7 @@ const SearchButton = styled.button`
 const NavButtons = styled.div`
     display: flex;
     gap: 1rem;
-    margin-bottom: 2rem; /* הוספת מרווח נוסף לפני הצ'אט */
+    margin-bottom: 2rem;
 `;
 
 const NavButton = styled(Link)`
@@ -87,15 +88,77 @@ const NavButton = styled(Link)`
     }
 `;
 
+const PersonalAreaButton = styled.button`
+    padding: 1rem 2rem;
+    font-size: 1.5rem;
+    color: #fff;
+    background-color: #333;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 2rem;
+`;
+
+const ModalOverlay = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    overflow-y: auto;
+`;
+
+const ModalContent = styled.div`
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+`;
+
+const CloseButton = styled.button`
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #333;
+`;
+
 const HomePage = () => {
     const navigate = useNavigate();
     const budgetRef = useRef(null);
     const { setBudget } = useContext(BudgetContext);
+    const { user } = useContext(UserContext);
+    const [showPersonalArea, setShowPersonalArea] = useState(false);
 
     const handleStartPlanning = () => {
         const budget = parseFloat(budgetRef.current.value);
         setBudget(budget);
         navigate('/plan-event');
+    };
+
+    const handlePersonalAreaClick = () => {
+        if (user && user.secret) {
+            setShowPersonalArea(true);
+        } else {
+            alert('Unable to access personal area. User is not logged in or secret is missing.');
+        }
+    };
+
+    const handleClosePersonalArea = () => {
+        setShowPersonalArea(false);
     };
 
     return (
@@ -123,6 +186,18 @@ const HomePage = () => {
                 <NavButton to="/signup">Sign Up</NavButton>
                 <NavButton to="/login">Login</NavButton>
             </NavButtons>
+            <PersonalAreaButton onClick={handlePersonalAreaClick}>
+                אזור אישי
+            </PersonalAreaButton>
+
+            {showPersonalArea && (
+                <ModalOverlay>
+                    <ModalContent>
+                        <CloseButton onClick={handleClosePersonalArea}>&times;</CloseButton>
+                        <PersonalArea secret={user.secret} />
+                    </ModalContent>
+                </ModalOverlay>
+            )}
         </HomePageContainer>
     );
 };

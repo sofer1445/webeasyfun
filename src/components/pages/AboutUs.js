@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import BackButtonComponent from '../Styled/BackButton';
+import BackButtonComponent from '../../Styled/BackButton';
 
 const AboutUsContainer = styled.div`
     display: flex;

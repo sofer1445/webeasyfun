@@ -1,13 +1,13 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import CardComponent from './CardComponent';
-import { BudgetContext } from '../Context/BudgetContext';
-import { UserContext } from '../Context/UserContext';
+import CardComponent from '../CardComponent';
+import { BudgetContext } from '../../Context/BudgetContext';
+import { UserContext } from '../../Context/UserContext';
 
-import lowPrice from '../images/venues/lowPrice.jpg';
-import mediumPrice from '../images/venues/mediumPrice.jpg';
-import highPrice from '../images/venues/highPrice.jpg';
+import lowPrice from '../../images/venues/lowPrice.jpg';
+import mediumPrice from '../../images/venues/mediumPrice.jpg';
+import highPrice from '../../images/venues/highPrice.jpg';
 
 const SuggestedVenuesContainer = styled.div`
     display: flex;

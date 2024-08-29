@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../Context/UserContext';
-import { EventContext } from '../Context/EventContext';
+import { UserContext } from '../../Context/UserContext';
+import { EventContext } from '../../Context/EventContext';
 
 const SummaryContainer = styled.div`
     display: flex;
@@ -114,7 +114,7 @@ const Summary = () => {
         }
     }, [user]);
 
-    const handleCreateEvent = () => {
+    const handleCreateEvent = async () => {
         if (!secret) {
             console.error('User secret is not available');
             return;
@@ -124,7 +124,9 @@ const Summary = () => {
             return;
         }
         const elements = [venue?.name, food?.name, attraction?.name].filter(Boolean);
-        sendUserSelections(eventData.eventId, elements);
+        await sendUserSelections(eventData.eventId, elements);
+        alert('תכנון האירוע נוצר בהצלחה');
+        navigate('/'); // Navigate to home page
     };
 
     const handleHomeClick = () => {

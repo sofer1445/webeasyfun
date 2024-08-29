@@ -1,9 +1,9 @@
 import React, { useState, useContext } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../Context/UserContext';
-import { BudgetContext } from '../Context/BudgetContext';
-import { EventContext } from '../Context/EventContext';
+import { UserContext } from '../../Context/UserContext';
+import { BudgetContext } from '../../Context/BudgetContext';
+import { EventContext } from '../../Context/EventContext';
 
 const EventPlanningContainer = styled.div`
     display: flex;

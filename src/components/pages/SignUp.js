@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import EmailValidation from '../Validation/EmailValidation';
-import PasswordValidation from '../Validation/PasswordValidation';
+import EmailValidation from '../../Validation/EmailValidation';
+import PasswordValidation from '../../Validation/PasswordValidation';
 import { useNavigate } from 'react-router-dom';
 
 const SignUpContainer = styled.div`

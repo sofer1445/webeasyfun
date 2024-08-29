@@ -1,18 +1,18 @@
 // src/App.js
 import React, { useState, useContext } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import HomePage from './components/HomePage';
-import SignUp from './components/SignUp';
-import AboutUs from './components/AboutUs';
-import Contact from './components/Contact';
-import EventPlanning from './components/EventPlanning';
-import SuggestedVenues from './components/SuggestedVenues';
-import ShoppingCart from './components/ShoppingCart';
-import FoodOptions from './components/FoodOptions';
-import Attractions from './components/Attractions';
-import Summary from "./components/Summary";
-import Login from "./components/Login";
-import UserProfile from "./components/UserProfile";
+import HomePage from './components/pages/HomePage';
+import SignUp from './components/pages/SignUp';
+import AboutUs from './components/pages/AboutUs';
+import Contact from './components/pages/Contact';
+import EventPlanning from './components/pages/EventPlanning';
+import SuggestedVenues from './components/pages/SuggestedVenues';
+import ShoppingCart from './components/pages/ShoppingCart';
+import FoodOptions from './components/pages/FoodOptions';
+import Attractions from './components/pages/Attractions';
+import Summary from "./components/pages/Summary";
+import Login from "./components/pages/Login";
+import UserProfile from "./components/infoUser/UserProfile";
 import FloatingChat from "./components/chat/FloatingChat";
 import { UserContext } from './Context/UserContext';
 import { EventProvider } from './Context/EventContext';
@@ -67,6 +67,7 @@ const App = () => {
     const [showEventPlanning, setShowEventPlanning] = useState(true);
     const [showChat, setShowChat] = useState(false);
     const [minimized, setMinimized] = useState(false);
+    const [remainingBudget, setRemainingBudget] = useState(0); // Define remainingBudget state
     const { user } = useContext(UserContext);
 
     const handleAddToCart = (item) => {
@@ -84,11 +85,11 @@ const App = () => {
     };
 
     const handleLogoClick = () => {
-        if (showChat) {
-            setShowChat(false);
-        } else {
-            setShowChat(true);
+        if (user) {
+            setShowChat(!showChat);
             setMinimized(false);
+        } else {
+            alert('Please log in to use the chat.');
         }
     };
 
@@ -97,12 +98,17 @@ const App = () => {
         setMinimized(false);
     };
 
+    const handleOpenChat = (cartItems, remainingBudget, userName) => {
+        setShowChat(true);
+        setMinimized(false);
+    };
+
     return (
         <EventProvider>
             <Router>
                 {user && showUserProfile && <UserProfile onClose={handleCloseUserProfile} />}
                 {!showUserProfile && <ShowProfileButton onClick={handleShowUserProfile}>Show Profile</ShowProfileButton>}
-                <ShoppingCart cartItems={cartItems} />
+                <ShoppingCart cartItems={cartItems} onOpenChat={handleOpenChat} />
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/signup" element={<SignUp />} />
@@ -116,7 +122,7 @@ const App = () => {
                     <Route path="/summary" element={<Summary cartItems={cartItems} />} />
                 </Routes>
                 <Logo src={LogoImgRooster} alt="Logo" onClick={handleLogoClick} />
-                {showChat && <FloatingChat onClose={handleCloseChat} minimized={minimized} />}
+                {showChat && <FloatingChat onClose={handleCloseChat} minimized={minimized} chatOpen={showChat} cartItems={cartItems} remainingBudget={remainingBudget} userName={user.name} />}
             </Router>
         </EventProvider>
     );
