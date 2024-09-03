@@ -136,6 +136,8 @@ const FloatingChat = ({ onClose, minimized }) => {
     }, [eventData, budget, cartItems]);
 
     const sendMessage = async (message = userInput, isInitial = false) => {
+        message = String(message);
+
         if (message.trim() === '') return;
 
         const newMessages = [...messages, { text: `You: ${message}`, sender: 'user' }];
@@ -157,6 +159,10 @@ const FloatingChat = ({ onClose, minimized }) => {
 
             const data = await response.text();
             const suggestions = parseSuggestions(data);
+
+            // Check if suggestions are parsed correctly
+            console.log("Parsed Suggestions: ", suggestions);
+
             setMessages([...newMessages, { text: `AI: ${data}`, sender: 'bot', suggestions }]);
         } catch (error) {
             console.error('Error:', error);
@@ -166,22 +172,28 @@ const FloatingChat = ({ onClose, minimized }) => {
         }
     };
 
+
     const parseSuggestions = (data) => {
         const suggestions = [];
-        const regex = /\d+\.\s(.*?)\s-\s.*?price\s\$(\d+)/g; // התאמת הרג'קס לפורמט של הנתונים
+        // Updated regex to match the formatted response
+        const regex = /Option\s\d+:\s(.+?)\s-\s(.+?),\sEstimated Price:\s\$(\d+)/g;
         let match;
         while ((match = regex.exec(data)) !== null) {
-            const name = match[1].split(' - ')[0]; // שמור רק את החלק הראשון של השם
-            const price = parseInt(match[2], 10);
-            suggestions.push({ name: name.trim(), price });
+            const name = match[1].trim(); // Option name
+            const vendor = match[2].trim(); // Vendor name
+            const price = parseInt(match[3], 10); // Price as integer
+            suggestions.push({ name: `${name} - ${vendor}`, price }); // Button label includes both option and vendor
         }
         return suggestions;
     };
 
 
+
+
     const handleSuggestionClick = (suggestion) => {
         handleAddToCart(suggestion);
         setMessages([...messages, { text: `You added: ${suggestion.name} - $${suggestion.price}`, sender: 'user' }]);
+        sendMessage(`You selected: ${suggestion.name}`, true);
     };
 
     const handleKeyDown = (e) => {
@@ -204,11 +216,15 @@ const FloatingChat = ({ onClose, minimized }) => {
                 {messages.map((msg, index) => (
                     <div key={index}>
                         <Message sender={msg.sender}>{msg.text}</Message>
-                        {msg.suggestions && msg.suggestions.map((suggestion, i) => (
-                            <SuggestionButton key={i} onClick={() => handleSuggestionClick(suggestion)}>
-                                {suggestion.name} - ${suggestion.price}
-                            </SuggestionButton>
-                        ))}
+                        {msg.suggestions && (
+                            <div>
+                                {msg.suggestions.map((suggestion, i) => (
+                                    <SuggestionButton key={i} onClick={() => handleSuggestionClick(suggestion)}>
+                                        {suggestion.name} - ${suggestion.price}
+                                    </SuggestionButton>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 ))}
             </ChatBody>

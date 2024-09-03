@@ -83,12 +83,14 @@ const CreateEventButton = styled.button`
 
 const sendUserSelections = async (eventId, elements) => {
     try {
+        // הסר כפילויות
+        const uniqueElements = Array.from(new Set(elements));
         const response = await fetch(`http://localhost:9125/save-selection?eventId=${eventId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(elements)
+            body: JSON.stringify(uniqueElements)
         });
 
         if (!response.ok) {
@@ -100,6 +102,7 @@ const sendUserSelections = async (eventId, elements) => {
         console.error('Error creating event:', error);
     }
 };
+
 
 const Summary = () => {
     const navigate = useNavigate();
@@ -131,10 +134,12 @@ const Summary = () => {
             attraction?.name,
             ...cartItems.map(item => item.name)
         ].filter(Boolean);
+
         await sendUserSelections(eventData.eventId, elements);
         alert('תכנון האירוע נוצר בהצלחה');
         navigate('/'); // Navigate to home page
     };
+
 
     const handleHomeClick = () => {
         navigate('/'); // Navigate to home page

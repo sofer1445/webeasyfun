@@ -1,4 +1,3 @@
-// src/components/pages/ShoppingCart.js
 import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
 import { BudgetContext } from '../../Context/BudgetContext';
@@ -7,24 +6,34 @@ import ShoppingCartIcon from '../../images/ShoppingCartIcon.jpeg';
 const ShoppingCartContainer = styled.div`
     position: fixed;
     top: 0;
-    right: 0;
-    width: 200px;
+    right: ${props => props.$showCart ? '0' : '-250px'};
+    width: 250px;
     height: 100vh;
     background-color: #f5f5f5;
     padding: 2rem;
     box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
     z-index: 1;
+    transition: right 0.3s ease;
 `;
 
 const CartIcon = styled.img`
     width: 50px;
     height: 50px;
-    animation: ${props => props.$cartItems.length > 0 && !props.$showCart ? 'blink 1s linear infinite' : 'none'};
-    @keyframes blink {
-        0% { opacity: 1; }
-        50% { opacity: 0; }
-        100% { opacity: 1; }
-    }
+    cursor: pointer;
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2;
+`;
+
+const CloseButton = styled.button`
+    background-color: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
 `;
 
 const Heading = styled.h1`
@@ -32,6 +41,11 @@ const Heading = styled.h1`
     font-weight: bold;
     color: #333;
     margin-bottom: 2rem;
+`;
+
+const CartItemsContainer = styled.div`
+    overflow-y: auto;
+    max-height: calc(100vh - 200px); /* Adjust based on other content height */
 `;
 
 const CartItem = styled.div`
@@ -76,12 +90,13 @@ const ShoppingCart = () => {
     };
 
     return (
-        <ShoppingCartContainer>
-            <CartIcon src={ShoppingCartIcon} alt="Shopping Cart" onClick={handleCartClick} $cartItems={cartItems} $showCart={showCart} />
-            {showCart && (
-                <>
-                    <Heading>Your Cart</Heading>
-                    <p>Remaining Budget: ${budget}</p> {budget < 0 && <p style={{ color: 'red' }}>You have exceeded your budget!</p>}
+        <>
+            <CartIcon src={ShoppingCartIcon} alt="Shopping Cart" onClick={handleCartClick} />
+            <ShoppingCartContainer $showCart={showCart}>
+                <CloseButton onClick={handleCartClick}>&times;</CloseButton>
+                <Heading>Your Cart</Heading>
+                <p>Remaining Budget: ${budget}</p> {budget < 0 && <p style={{ color: 'red' }}>You have exceeded your budget!</p>}
+                <CartItemsContainer>
                     {cartItems.map((item) => (
                         <CartItem key={item.name}>
                             <ItemName>{item.name}</ItemName>
@@ -89,10 +104,10 @@ const ShoppingCart = () => {
                             <RemoveButton onClick={() => handleRemoveFromCart(item)}>Remove</RemoveButton>
                         </CartItem>
                     ))}
-                    <RemainingBudget>Remaining Budget: ${budget}</RemainingBudget>
-                </>
-            )}
-        </ShoppingCartContainer>
+                </CartItemsContainer>
+                <RemainingBudget>Remaining Budget: ${budget}</RemainingBudget>
+            </ShoppingCartContainer>
+        </>
     );
 };
 
