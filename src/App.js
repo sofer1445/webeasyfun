@@ -119,10 +119,10 @@ const App = () => {
                     <Route path="/suggested-venues" element={<SuggestedVenues addToCart={handleAddToCart} />} />
                     <Route path="/food-options" element={<FoodOptions addToCart={handleAddToCart} />} />
                     <Route path="/attractions" element={<Attractions addToCart={handleAddToCart} />} />
+                    <Route path="/chat" element={<FloatingChat onClose={handleCloseChat} minimized={minimized} />} />
                     <Route path="/summary" element={<Summary cartItems={cartItems} />} />
                 </Routes>
                 <Logo src={LogoImgRooster} alt="Logo" onClick={handleLogoClick} />
-                {showChat && <FloatingChat onClose={handleCloseChat} minimized={minimized} chatOpen={showChat} cartItems={cartItems} remainingBudget={remainingBudget} userName={user.name} />}
             </Router>
         </EventProvider>
     );

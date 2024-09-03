@@ -1,5 +1,6 @@
 // src/Context/BudgetContext.js
 import React, { createContext, useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid'; // Import UUID library for unique IDs
 
 export const BudgetContext = createContext();
 
@@ -12,7 +13,8 @@ export const BudgetProvider = ({ children, initialBudget = 0 }) => {
     }, [initialBudget]);
 
     const handleAddToCart = (item) => {
-        setCartItems([...cartItems, item]);
+        const itemWithId = { ...item, id: uuidv4() }; // Add unique ID to item
+        setCartItems([...cartItems, itemWithId]);
         setBudget(prevBudget => prevBudget - item.price);
     };
 

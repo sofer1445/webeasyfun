@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../../Context/UserContext';
 import { EventContext } from '../../Context/EventContext';
+import { BudgetContext } from '../../Context/BudgetContext';
 
 const SummaryContainer = styled.div`
     display: flex;
@@ -104,6 +105,7 @@ const Summary = () => {
     const navigate = useNavigate();
     const { user, venue, food, attraction } = useContext(UserContext);
     const { eventData } = useContext(EventContext);
+    const { cartItems } = useContext(BudgetContext);
     const [secret, setSecret] = useState(null);
 
     useEffect(() => {
@@ -123,7 +125,12 @@ const Summary = () => {
             console.error('Event data or event ID is not available');
             return;
         }
-        const elements = [venue?.name, food?.name, attraction?.name].filter(Boolean);
+        const elements = [
+            venue?.name,
+            food?.name,
+            attraction?.name,
+            ...cartItems.map(item => item.name)
+        ].filter(Boolean);
         await sendUserSelections(eventData.eventId, elements);
         alert('תכנון האירוע נוצר בהצלחה');
         navigate('/'); // Navigate to home page

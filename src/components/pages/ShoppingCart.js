@@ -1,3 +1,4 @@
+// src/components/pages/ShoppingCart.js
 import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
 import { BudgetContext } from '../../Context/BudgetContext';
@@ -82,7 +83,7 @@ const ShoppingCart = () => {
                     <Heading>Your Cart</Heading>
                     <p>Remaining Budget: ${budget}</p> {budget < 0 && <p style={{ color: 'red' }}>You have exceeded your budget!</p>}
                     {cartItems.map((item) => (
-                        <CartItem key={item.id}>
+                        <CartItem key={item.name}>
                             <ItemName>{item.name}</ItemName>
                             <ItemPrice>${item.price}</ItemPrice>
                             <RemoveButton onClick={() => handleRemoveFromCart(item)}>Remove</RemoveButton>

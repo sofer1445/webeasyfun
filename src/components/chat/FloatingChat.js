@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+// src/components/chat/FloatingChat.js
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
+import { EventContext } from '../../Context/EventContext';
+import { BudgetContext } from '../../Context/BudgetContext';
 
 const ChatContainer = styled.div`
     position: fixed;
-    bottom: 100px;
-    right: 20px;
-    width: ${({ minimized }) => (minimized ? '50px' : '300px')};
-    height: ${({ minimized }) => (minimized ? '50px' : '400px')};
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
     background-color: white;
     border: 2px solid #333;
     border-radius: 10px;
@@ -17,27 +21,36 @@ const ChatContainer = styled.div`
     overflow: hidden;
 `;
 
+const ChatHeader = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #4c68af;
+    color: white;
+    border-bottom: 1px solid #ddd;
+`;
+
+const CloseButton = styled.button`
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+`;
+
 const ChatBody = styled.div`
     flex: 1;
     padding: 10px;
     overflow-y: auto;
-    display: ${({ minimized }) => (minimized ? 'none' : 'block')};
 `;
 
 const ChatFooter = styled.div`
     padding: 10px;
     border-top: 1px solid #ddd;
-    display: ${({ minimized }) => (minimized ? 'none' : 'flex')};
+    display: flex;
     align-items: center;
-`;
-
-const IntroMessage = styled.div`
-    background-color: #e0e0e0;
-    color: #333;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    text-align: center;
+    justify-content: space-between;
 `;
 
 const Input = styled.input`
@@ -58,10 +71,30 @@ const SendButton = styled.button`
     ${({ disabled }) => disabled && 'opacity: 0.5; cursor: not-allowed;'}
 `;
 
+const FinishButton = styled.button`
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+`;
+
 const Message = styled.div`
     margin-bottom: 10px;
     text-align: ${({ sender }) => (sender === 'user' ? 'right' : 'left')};
     color: ${({ sender }) => (sender === 'user' ? '#888' : '#4c68af')};
+`;
+
+const SuggestionButton = styled.button`
+    padding: 5px 10px;
+    background-color: #4c68af;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 5px;
+    margin-right: 5px;
 `;
 
 const spin = keyframes`
@@ -83,21 +116,39 @@ const FloatingChat = ({ onClose, minimized }) => {
     const [messages, setMessages] = useState([]);
     const [userInput, setUserInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const { eventData } = useContext(EventContext);
+    const { budget, cartItems, handleAddToCart } = useContext(BudgetContext);
 
-    const sendMessage = async () => {
-        if (userInput.trim() === '') return;
+    useEffect(() => {
+        const initialMessage = `
+            Event Summary:
+            Date: ${eventData.eventDate}
+            Guests: ${eventData.guests}
+            Budget: ${eventData.budget}
+            Remaining Budget: ${budget}
+            Selected Items: ${cartItems.map(item => item.name).join(', ')}
 
-        const newMessages = [...messages, { text: `You: ${userInput}`, sender: 'user' }];
+            ${budget > 0 ? 'Would you like to add more items?' : 'You have exceeded your budget. Would you like to change any items?'}
+        `;
+        setMessages([{ text: initialMessage, sender: 'bot' }]);
+        sendMessage(initialMessage, true);
+    }, [eventData, budget, cartItems]);
+
+    const sendMessage = async (message = userInput, isInitial = false) => {
+        if (message.trim() === '') return;
+
+        const newMessages = [...messages, { text: `You: ${message}`, sender: 'user' }];
         setMessages(newMessages);
-        setUserInput('');
+        if (!isInitial) setUserInput('');
         setLoading(true);
 
         try {
-            const response = await fetch(`http://localhost:9125/chat?message=${encodeURIComponent(userInput)}`, {
+            const response = await fetch(`http://localhost:9125/chat?message=${encodeURIComponent(message)}&eventDate=${encodeURIComponent(eventData.eventDate)}&guestCount=${encodeURIComponent(eventData.guests)}&totalBudget=${encodeURIComponent(eventData.budget)}&remainingBudget=${encodeURIComponent(budget)}&selectedItems=${encodeURIComponent(cartItems.map(item => item.name).join(', '))}`, {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json',
-                },
+                    'Content-Type': 'application/json'
+                }
             });
 
             if (!response.ok) {
@@ -105,7 +156,8 @@ const FloatingChat = ({ onClose, minimized }) => {
             }
 
             const data = await response.text();
-            setMessages([...newMessages, { text: `AI: ${data}`, sender: 'bot' }]);
+            const suggestions = parseSuggestions(data);
+            setMessages([...newMessages, { text: `AI: ${data}`, sender: 'bot', suggestions }]);
         } catch (error) {
             console.error('Error:', error);
             setMessages([...newMessages, { text: `Error contacting the server: ${error.message}`, sender: 'bot' }]);
@@ -114,20 +166,50 @@ const FloatingChat = ({ onClose, minimized }) => {
         }
     };
 
+    const parseSuggestions = (data) => {
+        const suggestions = [];
+        const regex = /\d+\.\s(.*?)\s-\s.*?price\s\$(\d+)/g; // התאמת הרג'קס לפורמט של הנתונים
+        let match;
+        while ((match = regex.exec(data)) !== null) {
+            const name = match[1].split(' - ')[0]; // שמור רק את החלק הראשון של השם
+            const price = parseInt(match[2], 10);
+            suggestions.push({ name: name.trim(), price });
+        }
+        return suggestions;
+    };
+
+
+    const handleSuggestionClick = (suggestion) => {
+        handleAddToCart(suggestion);
+        setMessages([...messages, { text: `You added: ${suggestion.name} - $${suggestion.price}`, sender: 'user' }]);
+    };
+
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             sendMessage();
         }
     };
 
+    const handleFinishPlanning = () => {
+        navigate('/summary');
+    };
+
     return (
         <ChatContainer minimized={minimized}>
+            <ChatHeader>
+                <span>Chat</span>
+                <CloseButton onClick={onClose}>X</CloseButton>
+            </ChatHeader>
             <ChatBody minimized={minimized}>
-                <IntroMessage>ברוכים הבאים לצ'אט עם עוזרת בינה מלאכותית!</IntroMessage>
                 {messages.map((msg, index) => (
-                    <Message key={index} sender={msg.sender}>
-                        {msg.text}
-                    </Message>
+                    <div key={index}>
+                        <Message sender={msg.sender}>{msg.text}</Message>
+                        {msg.suggestions && msg.suggestions.map((suggestion, i) => (
+                            <SuggestionButton key={i} onClick={() => handleSuggestionClick(suggestion)}>
+                                {suggestion.name} - ${suggestion.price}
+                            </SuggestionButton>
+                        ))}
+                    </div>
                 ))}
             </ChatBody>
             <ChatFooter minimized={minimized}>
@@ -141,6 +223,7 @@ const FloatingChat = ({ onClose, minimized }) => {
                 />
                 <SendButton onClick={sendMessage} disabled={loading}>Send</SendButton>
                 {loading && <Spinner />}
+                <FinishButton onClick={handleFinishPlanning}>Finish Planning</FinishButton>
             </ChatFooter>
         </ChatContainer>
     );

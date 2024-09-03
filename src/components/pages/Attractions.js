@@ -65,7 +65,7 @@ const Attractions = () => {
     const handleAttractionClick = (attraction) => {
         setAttraction(attraction);
         handleAddToCart(attraction);
-        navigate('/summary');
+        navigate('/chat');
     };
 
     return (
