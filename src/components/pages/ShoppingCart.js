@@ -5,14 +5,14 @@ import ShoppingCartIcon from '../../images/ShoppingCartIcon.jpeg';
 
 const ShoppingCartContainer = styled.div`
     position: fixed;
-    top: 0;
+    top: 60px; /* Adjust this based on your navbar height */
     right: ${props => props.$showCart ? '0' : '-250px'};
     width: 250px;
-    height: 100vh;
+    height: calc(100vh - 60px); /* Adjust based on navbar height */
     background-color: #f5f5f5;
     padding: 2rem;
     box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
-    z-index: 1;
+    z-index: 9999; /* Ensure it's above the navbar */
     transition: right 0.3s ease;
 `;
 
@@ -21,9 +21,9 @@ const CartIcon = styled.img`
     height: 50px;
     cursor: pointer;
     position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 2;
+    top: 10px; /* Adjust to align with navbar */
+    right: 10px;
+    z-index: 10000; /* Ensure the cart icon is above other elements */
 `;
 
 const CloseButton = styled.button`

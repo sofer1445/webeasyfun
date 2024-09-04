@@ -1,115 +1,134 @@
-// src/components/chat/FloatingChat.js
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import { EventContext } from '../../Context/EventContext';
 import { BudgetContext } from '../../Context/BudgetContext';
+import Spinner from "../../Styled/Spinner";
+
+// Animation for spinner
+const spin = keyframes`
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+`;
 
 const ChatContainer = styled.div`
     position: fixed;
-    bottom: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    background-color: white;
-    border: 2px solid #333;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    bottom: 20px;
+    left: 50%; /* משנים מ-right ל-left */
+    transform: translateX(-50%); /* מוסיפים שורת קוד זו כדי להזיז את הצ'אט למרכז */
+    width: 360px; /* צמצום רוחב הצ'אט לשמירה על נוחות */
+    max-height: 80vh; /* שמירה על גובה מקסימלי של 80% מגובה החלון */
+    background-color: #f8f9fa;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     z-index: 1001;
     display: flex;
     flex-direction: column;
     overflow: hidden;
 `;
-
+// שמירה על נראות טובה בכותרת הצ'אט
 const ChatHeader = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    background-color: #4c68af;
+    padding: 8px;
+    background-color: #343a40;
     color: white;
     border-bottom: 1px solid #ddd;
+    border-radius: 8px 8px 0 0;
 `;
 
 const CloseButton = styled.button`
     background: none;
     border: none;
     color: white;
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
+    &:hover {
+        color: #adb5bd;
+    }
 `;
 
 const ChatBody = styled.div`
     flex: 1;
-    padding: 10px;
+    padding: 10px; /* מרווח גדול יותר לתוכן */
     overflow-y: auto;
+    background-color: #ffffff;
+    max-height: 60vh; /* גובה מקסימלי לגוף הצ'אט */
 `;
 
+// סגנון ההודעה לשיפור הפרדה בין המשתמש ל-AI
+const Message = styled.div`
+    margin-bottom: 10px;
+    text-align: ${({ sender }) => (sender === 'user' ? 'right' : 'left')};
+    color: ${({ sender }) => (sender === 'user' ? '#212529' : '#007bff')};
+    background-color: ${({ sender }) => (sender === 'user' ? '#e9ecef' : '#d4edda')};
+    padding: 8px;
+    border-radius: 10px;
+    max-width: 80%;
+    margin: ${({ sender }) => (sender === 'user' ? '0 0 0 auto' : '0 auto 0 0')}; /* יישור לפי צד ההודעה */
+`;
+
+// עיצוב תחתית הצ'אט לנגישות ולנוחות
 const ChatFooter = styled.div`
-    padding: 10px;
+    padding: 10px; /* מרווח גדול יותר */
     border-top: 1px solid #ddd;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    background-color: #f8f9fa;
 `;
 
+// שיפור עיצוב שדה הקלט לנוחות משתמש
 const Input = styled.input`
     flex: 1;
-    padding: 5px;
+    padding: 8px; /* ריווח גדול יותר לנוחות */
     border: 1px solid #ddd;
     border-radius: 5px;
-    margin-right: 5px;
+    margin-right: 8px;
 `;
 
+// שיפור עיצוב כפתור השליחה לנגישות ולנראות
 const SendButton = styled.button`
-    padding: 5px 10px;
-    background-color: #4c68af;
+    padding: 8px 12px; /* ריווח גדול יותר לנוחות */
+    background-color: #007bff;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    ${({ disabled }) => disabled && 'opacity: 0.5; cursor: not-allowed;'}
+    &:hover {
+        background-color: #0056b3;
+    }
+    ${({ disabled }) => disabled && 'opacity: 0.6; cursor: not-allowed;'}
 `;
 
+// שיפור עיצוב כפתור סיום התכנון לנגישות ולנראות
 const FinishButton = styled.button`
-    padding: 5px 10px;
-    background-color: #4CAF50;
+    padding: 8px 12px; /* ריווח גדול יותר לנוחות */
+    background-color: #28a745;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    &:hover {
+        background-color: #218838;
+    }
 `;
 
-const Message = styled.div`
-    margin-bottom: 10px;
-    text-align: ${({ sender }) => (sender === 'user' ? 'right' : 'left')};
-    color: ${({ sender }) => (sender === 'user' ? '#888' : '#4c68af')};
-`;
-
+// שיפור תצוגת הכפתורים להוספת הצעות
 const SuggestionButton = styled.button`
-    padding: 5px 10px;
-    background-color: #4c68af;
+    padding: 6px 12px;
+    background-color: #6c757d;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     margin-top: 5px;
     margin-right: 5px;
-`;
-
-const spin = keyframes`
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-`;
-
-const Spinner = styled.div`
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #3498db;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    animation: ${spin} 2s linear infinite;
-    margin-left: 10px;
+    &:hover {
+        background-color: #5a6268;
+    }
 `;
 
 const FloatingChat = ({ onClose, minimized }) => {
@@ -159,10 +178,6 @@ const FloatingChat = ({ onClose, minimized }) => {
 
             const data = await response.text();
             const suggestions = parseSuggestions(data);
-
-            // Check if suggestions are parsed correctly
-            console.log("Parsed Suggestions: ", suggestions);
-
             setMessages([...newMessages, { text: `AI: ${data}`, sender: 'bot', suggestions }]);
         } catch (error) {
             console.error('Error:', error);
@@ -172,23 +187,18 @@ const FloatingChat = ({ onClose, minimized }) => {
         }
     };
 
-
     const parseSuggestions = (data) => {
         const suggestions = [];
-        // Updated regex to match the formatted response
-        const regex = /Option\s\d+:\s(.+?)\s-\s(.+?),\sEstimated Price:\s\$(\d+)/g;
+        const regex = /(\d+)\.\s(.+?)\s-\s(.+?)\s-\sEstimated Price:\s\$(\d+)/gi;
         let match;
         while ((match = regex.exec(data)) !== null) {
-            const name = match[1].trim(); // Option name
-            const vendor = match[2].trim(); // Vendor name
-            const price = parseInt(match[3], 10); // Price as integer
-            suggestions.push({ name: `${name} - ${vendor}`, price }); // Button label includes both option and vendor
+            const name = match[2].trim();
+            const description = match[3].trim();
+            const price = parseInt(match[4], 10);
+            suggestions.push({ name: `${name} - ${description}`, price });
         }
         return suggestions;
     };
-
-
-
 
     const handleSuggestionClick = (suggestion) => {
         handleAddToCart(suggestion);
@@ -216,7 +226,7 @@ const FloatingChat = ({ onClose, minimized }) => {
                 {messages.map((msg, index) => (
                     <div key={index}>
                         <Message sender={msg.sender}>{msg.text}</Message>
-                        {msg.suggestions && (
+                        {msg.suggestions && msg.suggestions.length > 0 && (
                             <div>
                                 {msg.suggestions.map((suggestion, i) => (
                                     <SuggestionButton key={i} onClick={() => handleSuggestionClick(suggestion)}>

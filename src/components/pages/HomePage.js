@@ -1,9 +1,10 @@
-import React, { useContext, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, {useContext, useRef, useState} from 'react';
+import {Link, useNavigate} from 'react-router-dom';
 import styled from 'styled-components';
-import { BudgetContext } from '../../Context/BudgetContext';
-import { UserContext } from '../../Context/UserContext';
+import {BudgetContext} from '../../Context/BudgetContext';
+import {UserContext} from '../../Context/UserContext';
 import PersonalArea from '../infoUser/PersonalArea';
+import NavBarComponent from "./NavBarComponent";
 
 const HomePageContainer = styled.div`
     display: flex;
@@ -64,6 +65,13 @@ const SearchButton = styled.button`
     &:hover {
         background-color: #555;
     }
+
+    &:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    .
 `;
 
 const NavButtons = styled.div`
@@ -139,9 +147,10 @@ const CloseButton = styled.button`
 const HomePage = () => {
     const navigate = useNavigate();
     const budgetRef = useRef(null);
-    const { setBudget } = useContext(BudgetContext);
-    const { user } = useContext(UserContext);
+    const {setBudget} = useContext(BudgetContext);
+    const {user} = useContext(UserContext);
     const [showPersonalArea, setShowPersonalArea] = useState(false);
+    const [budget, setBudgetValue] = useState('');
 
     const handleStartPlanning = () => {
         const budget = parseFloat(budgetRef.current.value);
@@ -161,44 +170,51 @@ const HomePage = () => {
         setShowPersonalArea(false);
     };
 
-    return (
-        <HomePageContainer>
-            <HeaderSection>
-                <Logo>EventPlan</Logo>
-                <Tagline>Plan your perfect event with ease</Tagline>
-            </HeaderSection>
-            <SearchSection>
-                <SearchInput
-                    ref={budgetRef}
-                    placeholder="Enter your budget..."
-                    type="number"
-                    min="0"
-                    step="100"
-                    required
-                />
-                <Link to="/plan-event" onClick={handleStartPlanning}>
-                    <SearchButton>Start Planning</SearchButton>
-                </Link>
-            </SearchSection>
-            <NavButtons>
-                <NavButton to="/about">About Us</NavButton>
-                <NavButton to="/contact">Contact</NavButton>
-                <NavButton to="/signup">Sign Up</NavButton>
-                <NavButton to="/login">Login</NavButton>
-            </NavButtons>
-            <PersonalAreaButton onClick={handlePersonalAreaClick}>
-                אזור אישי
-            </PersonalAreaButton>
+    const isBudgetValid = budget && !isNaN(budget) && parseFloat(budget) > 0;
 
-            {showPersonalArea && (
-                <ModalOverlay>
-                    <ModalContent>
-                        <CloseButton onClick={handleClosePersonalArea}>&times;</CloseButton>
-                        <PersonalArea secret={user.secret} />
-                    </ModalContent>
-                </ModalOverlay>
-            )}
-        </HomePageContainer>
+    return (
+        <>
+            <NavBarComponent/>
+            <HomePageContainer>
+                <HeaderSection>
+                    <Logo>Easy Fun</Logo>
+                    <Tagline>Plan your perfect event with us</Tagline>
+                </HeaderSection>
+                <SearchSection>
+                    <SearchInput
+                        ref={budgetRef}
+                        onChange={(e) => setBudgetValue(e.target.value)}
+                        placeholder="Enter your budget..."
+                        type="number"
+                        min="0"
+                        step="100"
+                        required
+                    />
+                    <Link to="/plan-event" onClick={handleStartPlanning}>
+
+                        <SearchButton disabled={!isBudgetValid}>Start Planning</SearchButton>
+                    </Link>
+                </SearchSection>
+                {/*<NavButtons>*/}
+                {/*    <NavButton to="/about">About Us</NavButton>*/}
+                {/*    <NavButton to="/contact">Contact</NavButton>*/}
+                {/*    <NavButton to="/signup">Sign Up</NavButton>*/}
+                {/*    <NavButton to="/login">Login</NavButton>*/}
+                {/*</NavButtons>*/}
+                {/*<PersonalAreaButton onClick={handlePersonalAreaClick}>*/}
+                {/*    אזור אישי*/}
+                {/*</PersonalAreaButton>*/}
+
+                {/*{showPersonalArea && (*/}
+                {/*    <ModalOverlay>*/}
+                {/*        <ModalContent>*/}
+                {/*            <CloseButton onClick={handleClosePersonalArea}>&times;</CloseButton>*/}
+                {/*            <PersonalArea secret={user.secret}/>*/}
+                {/*        </ModalContent>*/}
+                {/*    </ModalOverlay>*/}
+                {/*)}*/}
+            </HomePageContainer>
+        </>
     );
 };
 

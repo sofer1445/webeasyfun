@@ -5,7 +5,7 @@ const BackButton = styled.button`
     position: fixed;
     bottom: 1rem;
     left: 1rem;
-    background-color: #4CAF50;
+    background-color: #141427;
     color: white;
     border: none;
     padding: 0.5rem 1rem;

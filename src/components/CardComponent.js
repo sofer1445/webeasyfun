@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
+import Modal from '../Styled/Modal';
 
-const Card = styled.a`
+const Card = styled.div`
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -33,12 +34,43 @@ const Price = styled.p`
     color: #666;
 `;
 
-const CardComponent = ({ item, onClick }) => (
-    <Card onClick={onClick}>
-        <Image src={item.imageUrl} alt={item.name} />
-        <Name>{item.name}</Name>
-        <Price>Starting from ${item.price}</Price>
-    </Card>
-);
+const ViewMoreButton = styled.button`
+    margin-top: 1rem;
+    padding: 10px 15px;
+    background-color: #4c68af;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+`;
+
+const CardComponent = ({ item, onClick }) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleViewMoreClick = () => {
+        setIsModalOpen(true);
+    };
+
+    return (
+        <>
+            <Card onClick={onClick}>
+                <Image src={item.imageUrl} alt={item.name} />
+                <Name>{item.name}</Name>
+                <Price>Starting from ${item.price}</Price>
+                <ViewMoreButton onClick={(e) => {
+                    e.stopPropagation(); // Prevent card click event
+                    handleViewMoreClick();
+                }}>
+                    View More
+                </ViewMoreButton>
+            </Card>
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                content={{ name: item.name, description: item.description, price: item.price }}
+            />
+        </>
+    );
+};
 
 export default CardComponent;
