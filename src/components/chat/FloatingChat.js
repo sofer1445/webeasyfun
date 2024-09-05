@@ -14,10 +14,10 @@ const spin = keyframes`
 const ChatContainer = styled.div`
     position: fixed;
     bottom: 20px;
-    left: 50%; /* משנים מ-right ל-left */
-    transform: translateX(-50%); /* מוסיפים שורת קוד זו כדי להזיז את הצ'אט למרכז */
-    width: 360px; /* צמצום רוחב הצ'אט לשמירה על נוחות */
-    max-height: 80vh; /* שמירה על גובה מקסימלי של 80% מגובה החלון */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 460px;
+    max-height: 80vh;
     background-color: #f8f9fa;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -27,7 +27,7 @@ const ChatContainer = styled.div`
     flex-direction: column;
     overflow: hidden;
 `;
-// שמירה על נראות טובה בכותרת הצ'אט
+
 const ChatHeader = styled.div`
     display: flex;
     justify-content: space-between;
@@ -52,13 +52,12 @@ const CloseButton = styled.button`
 
 const ChatBody = styled.div`
     flex: 1;
-    padding: 10px; /* מרווח גדול יותר לתוכן */
+    padding: 10px;
     overflow-y: auto;
     background-color: #ffffff;
-    max-height: 60vh; /* גובה מקסימלי לגוף הצ'אט */
+    max-height: 60vh;
 `;
 
-// סגנון ההודעה לשיפור הפרדה בין המשתמש ל-AI
 const Message = styled.div`
     margin-bottom: 10px;
     text-align: ${({ sender }) => (sender === 'user' ? 'right' : 'left')};
@@ -67,12 +66,11 @@ const Message = styled.div`
     padding: 8px;
     border-radius: 10px;
     max-width: 80%;
-    margin: ${({ sender }) => (sender === 'user' ? '0 0 0 auto' : '0 auto 0 0')}; /* יישור לפי צד ההודעה */
+    margin: ${({ sender }) => (sender === 'user' ? '0 0 0 auto' : '0 auto 0 0')};
 `;
 
-// עיצוב תחתית הצ'אט לנגישות ולנוחות
 const ChatFooter = styled.div`
-    padding: 10px; /* מרווח גדול יותר */
+    padding: 10px;
     border-top: 1px solid #ddd;
     display: flex;
     align-items: center;
@@ -80,18 +78,16 @@ const ChatFooter = styled.div`
     background-color: #f8f9fa;
 `;
 
-// שיפור עיצוב שדה הקלט לנוחות משתמש
 const Input = styled.input`
     flex: 1;
-    padding: 8px; /* ריווח גדול יותר לנוחות */
+    padding: 8px;
     border: 1px solid #ddd;
     border-radius: 5px;
     margin-right: 8px;
 `;
 
-// שיפור עיצוב כפתור השליחה לנגישות ולנראות
 const SendButton = styled.button`
-    padding: 8px 12px; /* ריווח גדול יותר לנוחות */
+    padding: 8px 12px;
     background-color: #007bff;
     color: white;
     border: none;
@@ -103,9 +99,8 @@ const SendButton = styled.button`
     ${({ disabled }) => disabled && 'opacity: 0.6; cursor: not-allowed;'}
 `;
 
-// שיפור עיצוב כפתור סיום התכנון לנגישות ולנראות
 const FinishButton = styled.button`
-    padding: 8px 12px; /* ריווח גדול יותר לנוחות */
+    padding: 8px 12px;
     background-color: #28a745;
     color: white;
     border: none;
@@ -116,7 +111,6 @@ const FinishButton = styled.button`
     }
 `;
 
-// שיפור תצוגת הכפתורים להוספת הצעות
 const SuggestionButton = styled.button`
     padding: 6px 12px;
     background-color: #6c757d;
@@ -124,8 +118,8 @@ const SuggestionButton = styled.button`
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-top: 5px;
-    margin-right: 5px;
+    margin: 5px 0;
+    width: 100%;
     &:hover {
         background-color: #5a6268;
     }
@@ -155,8 +149,6 @@ const FloatingChat = ({ onClose, minimized }) => {
     }, [eventData, budget, cartItems]);
 
     const sendMessage = async (message = userInput, isInitial = false) => {
-        message = String(message);
-
         if (message.trim() === '') return;
 
         const newMessages = [...messages, { text: `You: ${message}`, sender: 'user' }];
