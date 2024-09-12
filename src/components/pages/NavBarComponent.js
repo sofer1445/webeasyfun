@@ -65,7 +65,6 @@ const NavBarComponent = () => {
         setShowUserProfile(!showUserProfile);
     };
 
-    // פונקציה להבאת שם המשתמש מהשרת
     const fetchUsernameByEmail = async (email) => {
         try {
             const response = await fetch(`http://localhost:9125/get-username?mail=${email}`);
@@ -82,10 +81,9 @@ const NavBarComponent = () => {
         return null;
     };
 
-    // שימוש ב-useEffect כדי לקרוא לפונקציה בזמן טעינת הקומפוננטה
     useEffect(() => {
         const fetchUser = async () => {
-            if (user && user.email) {
+            if (user && user.email && !user.username) {
                 const username = await fetchUsernameByEmail(user.email);
                 if (username) {
                     setUser((prevUser) => ({ ...prevUser, username }));

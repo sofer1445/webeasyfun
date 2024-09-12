@@ -1,18 +1,18 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { BudgetContext } from '../../Context/BudgetContext';
 import ShoppingCartIcon from '../../images/ShoppingCartIcon.jpeg';
 
 const ShoppingCartContainer = styled.div`
     position: fixed;
-    top: 60px; /* Adjust this based on your navbar height */
+    top: 60px;
     right: ${props => props.$showCart ? '0' : '-250px'};
     width: 250px;
-    height: calc(100vh - 60px); /* Adjust based on navbar height */
+    height: calc(100vh - 60px);
     background-color: #f5f5f5;
     padding: 2rem;
     box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
-    z-index: 9999; /* Ensure it's above the navbar */
+    z-index: 9999;
     transition: right 0.3s ease;
 `;
 
@@ -21,9 +21,9 @@ const CartIcon = styled.img`
     height: 50px;
     cursor: pointer;
     position: fixed;
-    top: 10px; /* Adjust to align with navbar */
+    top: 10px;
     right: 10px;
-    z-index: 10000; /* Ensure the cart icon is above other elements */
+    z-index: 10000;
 `;
 
 const CloseButton = styled.button`
@@ -45,7 +45,7 @@ const Heading = styled.h1`
 
 const CartItemsContainer = styled.div`
     overflow-y: auto;
-    max-height: calc(100vh - 200px); /* Adjust based on other content height */
+    max-height: calc(100vh - 200px);
 `;
 
 const CartItem = styled.div`
@@ -82,8 +82,21 @@ const RemainingBudget = styled.p`
 `;
 
 const ShoppingCart = () => {
-    const { budget, cartItems, handleRemoveFromCart } = useContext(BudgetContext);
+    const { budget, cartItems, handleRemoveFromCart, setCartItems } = useContext(BudgetContext);
     const [showCart, setShowCart] = useState(false);
+
+    // Load cart items from localStorage when the component mounts
+    useEffect(() => {
+        const savedCartItems = JSON.parse(localStorage.getItem('cartItems'));
+        if (savedCartItems) {
+            setCartItems(savedCartItems);
+        }
+    }, [setCartItems]);
+
+    // Save cart items to localStorage whenever cartItems changes
+    useEffect(() => {
+        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    }, [cartItems]);
 
     const handleCartClick = () => {
         setShowCart(!showCart);
@@ -95,10 +108,11 @@ const ShoppingCart = () => {
             <ShoppingCartContainer $showCart={showCart}>
                 <CloseButton onClick={handleCartClick}>&times;</CloseButton>
                 <Heading>Your Cart</Heading>
-                <p>Remaining Budget: ${budget}</p> {budget < 0 && <p style={{ color: 'red' }}>You have exceeded your budget!</p>}
+                <p>Remaining Budget: ${budget}</p>
+                {budget < 0 && <p style={{ color: 'red' }}>You have exceeded your budget!</p>}
                 <CartItemsContainer>
                     {cartItems.map((item) => (
-                        <CartItem key={item.name}>
+                        <CartItem key={item.id}>
                             <ItemName>{item.name}</ItemName>
                             <ItemPrice>${item.price}</ItemPrice>
                             <RemoveButton onClick={() => handleRemoveFromCart(item)}>Remove</RemoveButton>

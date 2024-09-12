@@ -1,4 +1,3 @@
-// src/App.js
 import React, {useContext, useState} from 'react';
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import HomePage from './components/pages/HomePage';
@@ -48,14 +47,14 @@ const Logo = styled.img`
     position: fixed;
     bottom: 20px;
     right: 20px;
-    width: 100px; /* Adjust size as needed */
+    width: 100px;
     height: auto;
     cursor: pointer;
     border: 2px solid #333;
     border-radius: 50%;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    animation: ${pulse} 5s infinite; /* Increased duration to 5 seconds */
-    z-index: 1000; /* Ensure the logo appears above other components */
+    animation: ${pulse} 5s infinite;
+    z-index: 1000;
 
     &:hover {
         transform: scale(1.1);
@@ -68,11 +67,12 @@ const App = () => {
     const [showEventPlanning, setShowEventPlanning] = useState(true);
     const [showChat, setShowChat] = useState(false);
     const [minimized, setMinimized] = useState(false);
-    const [remainingBudget, setRemainingBudget] = useState(0); // Define remainingBudget state
+    const [remainingBudget, setRemainingBudget] = useState(0);
     const {user} = useContext(UserContext);
 
     const handleAddToCart = (item) => {
         setCartItems([...cartItems, item]);
+        setRemainingBudget((prevBudget) => prevBudget - item.price);
     };
 
     const handleCloseUserProfile = () => {

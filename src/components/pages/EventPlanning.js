@@ -5,6 +5,7 @@ import { UserContext } from '../../Context/UserContext';
 import { BudgetContext } from '../../Context/BudgetContext';
 import { EventContext } from '../../Context/EventContext';
 import axios from 'axios';
+import BackButtonComponent from '../../Styled/BackButton';
 
 const EventPlanningContainer = styled.div`
     display: flex;
@@ -204,6 +205,7 @@ const EventPlanning = () => {
 
     return (
         <EventPlanningContainer>
+            <BackButtonComponent />
             <Heading>Plan Your Event</Heading>
             <EventForm onSubmit={handleSubmit}>
                 <Select

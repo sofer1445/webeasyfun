@@ -12,6 +12,7 @@ const spin = keyframes`
 `;
 
 const ChatContainer = styled.div`
+    ${({ $minimized }) => $minimized && 'display: none;'}
     position: fixed;
     bottom: 20px;
     left: 50%;
@@ -60,13 +61,13 @@ const ChatBody = styled.div`
 
 const Message = styled.div`
     margin-bottom: 10px;
-    text-align: ${({ sender }) => (sender === 'user' ? 'right' : 'left')};
-    color: ${({ sender }) => (sender === 'user' ? '#212529' : '#007bff')};
-    background-color: ${({ sender }) => (sender === 'user' ? '#e9ecef' : '#d4edda')};
+    text-align: ${({ $sender }) => ($sender === 'user' ? 'right' : 'left')};
+    color: ${({ $sender }) => ($sender === 'user' ? '#212529' : '#007bff')};
+    background-color: ${({ $sender }) => ($sender === 'user' ? '#e9ecef' : '#d4edda')};
     padding: 8px;
     border-radius: 10px;
     max-width: 80%;
-    margin: ${({ sender }) => (sender === 'user' ? '0 0 0 auto' : '0 auto 0 0')};
+    margin: ${({ $sender }) => ($sender === 'user' ? '0 0 0 auto' : '0 auto 0 0')};
 `;
 
 const ChatFooter = styled.div`
@@ -133,6 +134,7 @@ const FloatingChat = ({ onClose, minimized }) => {
     const { eventData } = useContext(EventContext);
     const { budget, cartItems, handleAddToCart } = useContext(BudgetContext);
 
+    // Initial message when chat starts
     useEffect(() => {
         const initialMessage = `
             Event Summary:
@@ -168,9 +170,13 @@ const FloatingChat = ({ onClose, minimized }) => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.text();
-            const suggestions = parseSuggestions(data);
-            setMessages([...newMessages, { text: `AI: ${data}`, sender: 'bot', suggestions }]);
+            const data = await response.text();  // מקבל את התשובה כטקסט ולא JSON
+            console.log("Response from server: ", data);  // הדפסת התשובה המלאה מהשרת לקונסול
+
+            setTimeout(() => {
+                setMessages([...newMessages, { text: `AI: ${data}`, sender: 'bot' }]);
+            }, 500);
+
         } catch (error) {
             console.error('Error:', error);
             setMessages([...newMessages, { text: `Error contacting the server: ${error.message}`, sender: 'bot' }]);
@@ -179,58 +185,32 @@ const FloatingChat = ({ onClose, minimized }) => {
         }
     };
 
-    const parseSuggestions = (data) => {
-        const suggestions = [];
-        const regex = /(\d+)\.\s(.+?)\s-\s(.+?)\s-\sEstimated Price:\s\$(\d+)/gi;
-        let match;
-        while ((match = regex.exec(data)) !== null) {
-            const name = match[2].trim();
-            const description = match[3].trim();
-            const price = parseInt(match[4], 10);
-            suggestions.push({ name: `${name} - ${description}`, price });
-        }
-        return suggestions;
-    };
-
-    const handleSuggestionClick = (suggestion) => {
-        handleAddToCart(suggestion);
-        setMessages([...messages, { text: `You added: ${suggestion.name} - $${suggestion.price}`, sender: 'user' }]);
-        sendMessage(`You selected: ${suggestion.name}`, true);
-    };
-
+    // Send message on Enter key press
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             sendMessage();
         }
     };
 
+    // Finish planning and navigate to the summary page
     const handleFinishPlanning = () => {
         navigate('/summary');
     };
 
     return (
-        <ChatContainer minimized={minimized}>
+        <ChatContainer $minimized={minimized}>
             <ChatHeader>
                 <span>Chat</span>
-                <CloseButton onClick={onClose}>X</CloseButton>
+                <button onClick={onClose}>X</button>
             </ChatHeader>
-            <ChatBody minimized={minimized}>
+            <ChatBody $minimized={minimized}>
                 {messages.map((msg, index) => (
                     <div key={index}>
-                        <Message sender={msg.sender}>{msg.text}</Message>
-                        {msg.suggestions && msg.suggestions.length > 0 && (
-                            <div>
-                                {msg.suggestions.map((suggestion, i) => (
-                                    <SuggestionButton key={i} onClick={() => handleSuggestionClick(suggestion)}>
-                                        {suggestion.name} - ${suggestion.price}
-                                    </SuggestionButton>
-                                ))}
-                            </div>
-                        )}
+                        <Message $sender={msg.sender}>{msg.text}</Message>
                     </div>
                 ))}
             </ChatBody>
-            <ChatFooter minimized={minimized}>
+            <ChatFooter $minimized={minimized}>
                 <Input
                     type="text"
                     placeholder="Type a message..."
@@ -241,7 +221,7 @@ const FloatingChat = ({ onClose, minimized }) => {
                 />
                 <SendButton onClick={sendMessage} disabled={loading}>Send</SendButton>
                 {loading && <Spinner />}
-                <FinishButton onClick={handleFinishPlanning}>Finish Planning</FinishButton>
+                <button onClick={handleFinishPlanning}>Finish Planning</button>
             </ChatFooter>
         </ChatContainer>
     );

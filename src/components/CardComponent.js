@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Modal from '../Styled/Modal';
 
@@ -12,6 +12,11 @@ const Card = styled.div`
     cursor: pointer;
     text-decoration: none;
     color: inherit;
+    transition: transform 0.2s;
+
+    &:hover {
+        transform: scale(1.02);
+    }
 `;
 
 const Image = styled.img`
@@ -42,33 +47,45 @@ const ViewMoreButton = styled.button`
     border: none;
     border-radius: 5px;
     cursor: pointer;
+
+    &:hover {
+        background-color: #3b529a;
+    }
 `;
 
 const CardComponent = ({ item, onClick }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const handleViewMoreClick = () => {
+    useEffect(() => {
+        console.log('CardComponent item:', item);
+    }, [item]);
+
+    const handleViewMoreClick = (e) => {
+        e.stopPropagation(); // Prevent card click event
         setIsModalOpen(true);
     };
 
     return (
         <>
             <Card onClick={onClick}>
-                <Image src={item.imageUrl} alt={item.name} />
+                <Image src={item.image} alt={item.name} />
                 <Name>{item.name}</Name>
                 <Price>Starting from ${item.price}</Price>
-                <ViewMoreButton onClick={(e) => {
-                    e.stopPropagation(); // Prevent card click event
-                    handleViewMoreClick();
-                }}>
+                <ViewMoreButton onClick={handleViewMoreClick}>
                     View More
                 </ViewMoreButton>
             </Card>
-            <Modal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                content={{ name: item.name, description: item.description, price: item.price }}
-            />
+            {isModalOpen && (
+                <Modal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    content={{
+                        name: item.name,
+                        description: item.description,
+                        price: item.price,
+                    }}
+                />
+            )}
         </>
     );
 };

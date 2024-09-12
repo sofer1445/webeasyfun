@@ -6,6 +6,12 @@ import { BudgetContext } from '../../Context/BudgetContext';
 import { EventContext } from '../../Context/EventContext';
 import Spinner from '../../Styled/Spinner';
 import DynamicHeading from '../../Styled/DynamicHeading';
+import LoadNewSuggestionsButton from '../LoadNewSuggestionsButton';
+import BackButtonComponent from '../../Styled/BackButton';
+
+import highPrice from '../../images/attractions/High price attraction.jpg';
+import lowPrice from '../../images/attractions/Low price attraction.jpg';
+import mediumPrice from '../../images/attractions/Mid price attraction.jpg';
 
 const AttractionsContainer = styled.div`
     display: flex;
@@ -29,61 +35,93 @@ const Attractions = () => {
     const navigate = useNavigate();
     const [attractions, setAttractions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [buttonLoading, setButtonLoading] = useState(false);
+
+    const fetchAttractions = async () => {
+        setButtonLoading(true);
+        try {
+            const remainingBudget = budget;
+            const location = eventData.location;
+            const eventType = eventData.eventType;
+            const eventDate = eventData.eventDate;
+            const guestCount = eventData.guests;
+
+            const response = await fetch(`http://localhost:9125/get-suggested-attractions?eventType=${encodeURIComponent(eventType)}&eventDate=${encodeURIComponent(eventDate)}&guestCount=${encodeURIComponent(guestCount)}&remainingBudget=${remainingBudget}&location=${encodeURIComponent(location)}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.text();
+            console.log("Data from server:", data); // לוג כדי לוודא שהמידע מהשרת מגיע
+
+            if (!data.trim()) {
+                throw new Error("Received empty data from server");
+            }
+
+            const parsedAttractions = parseAttractionsData(data);
+            console.log("Parsed attractions:", parsedAttractions); // לוג אחרי הפענוח
+
+            if (parsedAttractions.length === 0) {
+                throw new Error("No valid attraction data parsed");
+            }
+
+            setAttractions(parsedAttractions);
+        } catch (error) {
+            console.error('Error fetching attractions:', error);
+            setAttractions([]);
+        } finally {
+            setLoading(false);
+            setButtonLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const remainingBudget = budget;
-                const location = eventData.location;
-                const eventType = eventData.eventType;
-                const eventDate = eventData.eventDate;
-                const guestCount = eventData.guests;
-
-                const response = await fetch(`http://localhost:9125/get-suggested-attractions?eventType=${encodeURIComponent(eventType)}&eventDate=${encodeURIComponent(eventDate)}&guestCount=${encodeURIComponent(guestCount)}&remainingBudget=${remainingBudget}&location=${encodeURIComponent(location)}`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.text();
-                const parsedAttractions = parseAttractionsData(data);
-                setAttractions(parsedAttractions);
-            } catch (error) {
-                console.error('Error fetching attractions:', error);
-                setAttractions([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
+        fetchAttractions();
     }, [budget, eventData.location, eventData.eventType, eventData.eventDate, eventData.guests]);
 
     const parseAttractionsData = (data) => {
-        const attractionLines = data.split('\n').filter(line => line.includes(' - '));
+        const attractionLines = data.trim().split('\n\n'); // חלוקה לפי שני רווחים ריקים כדי להפריד בין ההצעות השונות
         return attractionLines.map((line, index) => {
-            const parts = line.split(' - ');
-            if (parts.length < 3) {
-                console.error('Unexpected attraction data format:', line);
+            try {
+                const nameMatch = line.match(/option: (.*?);/i);
+                const priceMatch = line.match(/Price:\s?(\d+)\s?USD/i);
+                const detailsMatch = line.match(/Details: (.*)/i);
+
+                if (!nameMatch || !priceMatch || !detailsMatch) {
+                    console.error(`Invalid data format for attraction line: ${line}`);
+                    return null;
+                }
+
+                const name = nameMatch[1].trim();
+                const price = parseInt(priceMatch[1], 10);
+                const description = detailsMatch[1].trim();
+
+                if (!name || price === 0) {
+                    console.warn(`Skipping invalid attraction: name=${name}, price=${price}`);
+                    return null;
+                }
+
+                let image;
+                if (price > budget * 0.25) {
+                    image = highPrice;
+                } else if (price > budget * 0.15) {
+                    image = mediumPrice;
+                } else {
+                    image = lowPrice;
+                }
+
                 return {
                     id: index + 1,
-                    name: 'Unknown Attraction',
-                    description: 'No description available',
-                    price: 0
+                    name,
+                    description,
+                    price,
+                    image
                 };
+            } catch (error) {
+                console.error("Error parsing attraction line:", error);
+                return null;
             }
-
-            const [name, description] = parts;
-
-            // חיפוש המחיר מתוך הטקסט
-            const priceMatch = line.match(/(\d+)/g); // מוצא מספרים בטקסט
-            const price = priceMatch ? parseInt(priceMatch[priceMatch.length - 1], 10) : 0; // מקבל את המספר האחרון כערך המחיר
-
-            return {
-                id: index + 1,
-                name: name.trim(),
-                description: description.trim(),
-                price
-            };
-        });
+        }).filter(item => item !== null); // סינון פריטים לא תקינים
     };
 
     const handleAttractionClick = (attraction) => {
@@ -93,17 +131,21 @@ const Attractions = () => {
 
     return (
         <AttractionsContainer>
+            <BackButtonComponent />
             {loading ? (
                 <>
                     <DynamicHeading loading={loading} />
                     <Spinner />
                 </>
             ) : (
-                <AttractionsList>
-                    {attractions.map((attraction) => (
-                        <CardComponent key={attraction.id} item={attraction} onClick={() => handleAttractionClick(attraction)} />
-                    ))}
-                </AttractionsList>
+                <>
+                    <AttractionsList>
+                        {attractions.map((attraction) => (
+                            <CardComponent key={attraction.id} item={attraction} image={attraction.image} onClick={() => handleAttractionClick(attraction)} />
+                        ))}
+                    </AttractionsList>
+                    <LoadNewSuggestionsButton onClick={fetchAttractions} loading={buttonLoading} />
+                </>
             )}
         </AttractionsContainer>
     );
