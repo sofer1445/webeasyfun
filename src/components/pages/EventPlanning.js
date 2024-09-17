@@ -6,14 +6,44 @@ import { BudgetContext } from '../../Context/BudgetContext';
 import { EventContext } from '../../Context/EventContext';
 import axios from 'axios';
 import BackButtonComponent from '../../Styled/BackButton';
+import PreExistingEvent from '../PreExistingEvent';
+import CardComponent from '../CardComponent';
 
 const EventPlanningContainer = styled.div`
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    align-items: flex-start;
+    justify-content: space-between;
     height: 100vh;
     background-color: #f5f5f5;
+    overflow-y: auto;
+    padding: 1rem;
+
+    @media (min-width: 768px) {
+        flex-direction: row;
+    }
+`;
+
+const FormContainer = styled.div`
+    flex: 1;
+    margin-right: 1rem;
+    width: 100%;
+
+    @media (min-width: 768px) {
+        width: 50%;
+    }
+`;
+
+const CardsContainer = styled.div`
+    flex: 1;
+    overflow-y: auto;
+    width: 100%;
+    margin-top: 1rem;
+
+    @media (min-width: 768px) {
+        width: 50%;
+        margin-top: 0;
+    }
 `;
 
 const Heading = styled.h1`
@@ -34,6 +64,13 @@ const Input = styled.input`
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 1rem;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease;
+
+    &:focus {
+        border-color: #4c68af;
+        outline: none;
+    }
 `;
 
 const Select = styled.select`
@@ -43,6 +80,13 @@ const Select = styled.select`
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 1rem;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease;
+
+    &:focus {
+        border-color: #4c68af;
+        outline: none;
+    }
 `;
 
 const SuggestionsList = styled.ul`
@@ -69,17 +113,17 @@ const SuggestionItem = styled.li`
 `;
 
 const Button = styled.button`
-    background-color: #333;
+    background-color: ${props => props.disabled ? '#999' : '#333'};
     color: #fff;
     border: none;
     border-radius: 20px;
     padding: 0.8rem 1.5rem;
     font-size: 1rem;
-    cursor: pointer;
+    cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
     transition: background-color 0.3s ease;
 
     &:hover {
-        background-color: #555;
+        background-color: ${props => props.disabled ? '#999' : '#555'};
     }
 `;
 
@@ -89,29 +133,27 @@ const EventPlanning = () => {
     const [eventDate, setEventDate] = useState('');
     const [location, setLocation] = useState('');
     const [guests, setGuests] = useState('');
-    const [cities, setCities] = useState([]); // State to store all cities with countries
-    const [suggestions, setSuggestions] = useState([]); // State to store filtered cities
-    const [searchTerm, setSearchTerm] = useState(''); // State to store the search term
+    const [cities, setCities] = useState([]);
+    const [suggestions, setSuggestions] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [similarEvent, setSimilarEvent] = useState(null);
+    const [showSimilarEvent, setShowSimilarEvent] = useState(false);
+    const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+    const [formChanged, setFormChanged] = useState(false);
     const { user } = useContext(UserContext);
-    const { budget } = useContext(BudgetContext);
+    const { budget, addToCart } = useContext(BudgetContext);
     const { setEventData } = useContext(EventContext);
 
     useEffect(() => {
         const fetchCities = async () => {
             try {
-                console.log('Fetching cities from API...');
                 const response = await axios.get('https://countriesnow.space/api/v0.1/countries/population/cities');
-                console.log('Full API response data:', response.data);
-
                 if (response.data && response.data.data) {
                     const cityData = response.data.data.map(city => ({
                         name: city.city,
                         country: city.country
                     }));
                     setCities(cityData);
-                    console.log('Cities fetched:', cityData);
-                } else {
-                    console.error('Unexpected data structure:', response.data);
                 }
             } catch (error) {
                 console.error('Error fetching cities:', error);
@@ -121,15 +163,26 @@ const EventPlanning = () => {
         fetchCities();
     }, []);
 
+    const handleInputChange = (setter) => (e) => {
+        setter(e.target.value);
+        setFormChanged(true);
+        if (showSimilarEvent) {
+            setIsButtonDisabled(false);
+        }
+    };
+
     const handleSearchChange = (e) => {
         const value = e.target.value;
         setSearchTerm(value);
-
+        setFormChanged(true);
+        if (showSimilarEvent) {
+            setIsButtonDisabled(false);
+        }
         if (value) {
             const filtered = cities.filter(city =>
                 city.name.toLowerCase().startsWith(value.toLowerCase())
             );
-            setSuggestions(filtered);
+            setSuggestions(filtered.slice(0, 5));
         } else {
             setSuggestions([]);
         }
@@ -139,118 +192,134 @@ const EventPlanning = () => {
         setSearchTerm(`${city.name}, ${city.country}`);
         setLocation(city.name);
         setSuggestions([]);
+        setFormChanged(true);
+        if (showSimilarEvent) {
+            setIsButtonDisabled(false);
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        console.log('Event Type:', eventType);
-        console.log('Event Date:', eventDate);
-        console.log('Location:', location);
-        console.log('Number of Guests:', guests);
-        console.log('Budget:', budget);
-
         const secret = await callUserSecret();
-        console.log('User secret:', secret, user);
-        const response = await fetch(`http://localhost:9125/plan-event?secret=${secret}&typeEvent=${eventType}&date=${eventDate}&location=${location}&guests=${guests}&budget=${budget}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        });
-
-        if (!response.ok) {
-            console.error('Server call failed:', response);
+        const similarEvent = await checkSimilarEvent(secret, eventType, location, guests, budget);
+        if (similarEvent) {
+            setSimilarEvent(similarEvent);
+            setShowSimilarEvent(true);
+            setIsButtonDisabled(true);
+            setFormChanged(false);
         } else {
-            const eventId = await response.json();
-            console.log('Event ID:', eventId);
-
-            setEventData({ eventType, eventDate, location, guests, budget, eventId });
-
-            navigate('/suggested-venues');
+            proceedToSuggestedVenues(secret);
         }
     };
 
+
     const callUserSecret = async () => {
         try {
-            console.log('User:', user);
-            const mail = user.email;
-            console.log('User email:', mail + ",");
-            const response = await fetch(`http://localhost:9125/get-userByMail?mail=${mail}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-            });
-
-            if (!response.ok) {
-                console.error('Server call failed:', response.status, response.statusText);
-                return null;
-            }
-
-            const responseData = await response.text();
-            console.log('Server response:', responseData);
-
-            if (!responseData) {
-                console.error('Secret not found in response:', responseData);
-                return null;
-            }
-
-            return responseData;
+            const response = await axios.get(`http://localhost:9125/get-userByMail?mail=${user.email}`);
+            return response.data;
         } catch (error) {
             console.error('Error fetching user secret:', error);
             return null;
         }
     };
 
+    const checkSimilarEvent = async (secret, eventType, location, guests, budget) => {
+        try {
+            const response = await axios.get(`http://localhost:9125/isSimilarEventExists`, {
+                params: { secret, typeEvent: eventType, location, guests, budget }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error checking for similar event:', error);
+            return null;
+        }
+    };
+
+    const proceedToSuggestedVenues = async (secret) => {
+        try {
+            const response = await axios.post(`http://localhost:9125/plan-event`, {
+                secret,
+                typeEvent: eventType,
+                date: eventDate,
+                location,
+                guests,
+                budget
+            });
+            setEventData({ eventType, eventDate, location, guests, budget, eventId: response.data });
+            navigate('/suggested-venues');
+        } catch (error) {
+            console.error('Error proceeding to suggested venues:', error);
+        }
+    };
+
+    const handleSelectEvent = (event) => {
+        setEventData(event); // Update the event data in the context
+        addToCart(event); // Add event details to the cart
+        navigate('/chat'); // Navigate to the chat page
+    };
+
     return (
         <EventPlanningContainer>
-            <BackButtonComponent />
-            <Heading>Plan Your Event</Heading>
-            <EventForm onSubmit={handleSubmit}>
-                <Select
-                    value={eventType}
-                    onChange={(e) => setEventType(e.target.value)}
-                >
-                    <option value="">Select Event Type</option>
-                    <option value="wedding">Wedding</option>
-                    <option value="birthday">Birthday Party</option>
-                    <option value="corporate">Corporate Event</option>
-                </Select>
-                <Input
-                    type="date"
-                    placeholder="Event Date"
-                    value={eventDate}
-                    onChange={(e) => setEventDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                />
-                <div style={{ position: 'relative', width: '100%' }}>
+            <FormContainer>
+                <BackButtonComponent />
+                <Heading>Plan Your Event</Heading>
+                <EventForm onSubmit={handleSubmit}>
+                    <Select
+                        value={eventType}
+                        onChange={handleInputChange(setEventType)}
+                    >
+                        <option value="">Select Event Type</option>
+                        <option value="wedding">Wedding</option>
+                        <option value="birthday">Birthday Party</option>
+                        <option value="corporate">Corporate Event</option>
+                    </Select>
                     <Input
-                        type="text"
-                        placeholder="Search Location"
-                        value={searchTerm}
-                        onChange={handleSearchChange}
+                        type="date"
+                        placeholder="Event Date"
+                        value={eventDate}
+                        onChange={handleInputChange(setEventDate)}
+                        min={new Date().toISOString().split('T')[0]}
                     />
-                    {suggestions.length > 0 && (
-                        <SuggestionsList>
-                            {suggestions.map((city, index) => (
-                                <SuggestionItem key={index} onClick={() => handleSuggestionClick(city)}>
-                                    {`${city.name}, ${city.country}`}
-                                </SuggestionItem>
-                            ))}
-                        </SuggestionsList>
-                    )}
-                </div>
-                <Input
-                    type="number"
-                    placeholder="Number of Guests"
-                    value={guests}
-                    onChange={(e) => setGuests(e.target.value)}
-                />
-                <Button type="submit">Continue</Button>
-            </EventForm>
+                    <div style={{ position: 'relative', width: '100%' }}>
+                        <Input
+                            type="text"
+                            placeholder="Search Location"
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                        />
+                        {suggestions.length > 0 && (
+                            <SuggestionsList>
+                                {suggestions.map((city, index) => (
+                                    <SuggestionItem key={index} onClick={() => handleSuggestionClick(city)}>
+                                        {city.name}, {city.country}
+                                    </SuggestionItem>
+                                ))}
+                            </SuggestionsList>
+                        )}
+                    </div>
+                    <Input
+                        type="number"
+                        placeholder="Number of Guests"
+                        value={guests}
+                        onChange={handleInputChange(setGuests)}
+                    />
+                    <Button type="submit" disabled={isButtonDisabled && !formChanged}>
+                        Continue
+                    </Button>
+                </EventForm>
+            </FormContainer>
+            <CardsContainer>
+                {showSimilarEvent && (
+                    <PreExistingEvent event={similarEvent} onSelect={handleSelectEvent}>
+                        <Button onClick={() => navigate('/suggested-venues')} disabled={false}>
+                            Continue to Custom Suggestions
+                        </Button>
+                    </PreExistingEvent>
+                )}
+            </CardsContainer>
         </EventPlanningContainer>
     );
 };
 
 export default EventPlanning;
+

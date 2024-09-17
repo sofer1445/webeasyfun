@@ -1,19 +1,19 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom'; // For navigation between pages
 import styled from 'styled-components';
-import CardComponent from '../CardComponent';
 import { BudgetContext } from '../../Context/BudgetContext';
 import { EventContext } from '../../Context/EventContext';
 import Spinner from '../../Styled/Spinner';
-import DynamicHeading from '../../Styled/DynamicHeading';
-import LoadNewSuggestionsButton from '../LoadNewSuggestionsButton';
-import BackButtonComponent from '../../Styled/BackButton';
+import CardComponent from '../CardComponent'; // Use existing component for rendering food cards
+import DynamicHeading from '../../Styled/DynamicHeading'; // For dynamic heading when loading
+import LoadNewSuggestionsButton from '../LoadNewSuggestionsButton'; // For the "Load New Suggestions" button
+import BackButtonComponent from '../../Styled/BackButton'; // Back button
 
-import highbudget from '../../images/foods/highbudget_event_Please.jpg';
-import lowbudget from '../../images/foods/lowbudget_eventPlease.jpg';
-import mediumbudget from '../../images/foods/midbudget_eventPlease.jpg';
+import highPriceImg from '../../images/foods/highbudget_event_Please.jpg'; // High-price option image
+import mediumPriceImg from '../../images/foods/midbudget_eventPlease.jpg'; // Medium-price option image
+import lowPriceImg from '../../images/foods/lowbudget_eventPlease.jpg'; // Low-price option image
 
-const FoodOptionsContainer = styled.div`
+const FoodContainer = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -40,30 +40,18 @@ const FoodOptions = () => {
     const fetchFoods = async () => {
         setButtonLoading(true);
         try {
-            const remainingBudget = budget;
-            const location = eventData.location;
-            const eventType = eventData.eventType;
-            const eventDate = eventData.eventDate;
-            const guestCount = eventData.guests;
-
-            const response = await fetch(`http://localhost:9125/get-suggested-food?eventType=${encodeURIComponent(eventType)}&eventDate=${encodeURIComponent(eventDate)}&guestCount=${encodeURIComponent(guestCount)}&remainingBudget=${remainingBudget}&location=${encodeURIComponent(location)}`);
+            const response = await fetch(
+                `http://localhost:9125/get-suggested-food?eventType=${encodeURIComponent(eventData.eventType)}&eventDate=${encodeURIComponent(eventData.eventDate)}&guestCount=${encodeURIComponent(eventData.guests)}&remainingBudget=${budget}&location=${encodeURIComponent(eventData.location)}`
+            );
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
 
             const data = await response.text();
-            console.log("Data from server:", data); // לוג כדי לוודא שהמידע מהשרת מגיע
+            console.log("Raw response from server:", data);
 
-            if (!data.trim()) {
-                throw new Error("Received empty data from server");
-            }
-
-            const parsedFoods = parseFoodData(data);
-            console.log("Parsed foods:", parsedFoods); // לוג אחרי הפענוח
-
-            if (parsedFoods.length === 0) {
-                throw new Error("No valid food data parsed");
-            }
+            const parsedFoods = parseFoodOptions(data);
+            console.log("Parsed foods:", parsedFoods);
 
             setFoods(parsedFoods);
         } catch (error) {
@@ -75,62 +63,50 @@ const FoodOptions = () => {
         }
     };
 
-    useEffect(() => {
-        fetchFoods();
-    }, [budget, eventData.location, eventData.eventType, eventData.eventDate, eventData.guests]);
+    const parseFoodOptions = (data) => {
+        console.log("Raw food data:", data); // Logging the raw data
 
-    const parseFoodData = (data) => {
-        const foodLines = data.trim().split('\n\n'); // חלוקה לפי שתי שורות ריקות כדי להפריד בין ההצעות
+        const foodLines = data.trim().split('\n'); // Split the lines
+
         return foodLines.map((line, index) => {
             try {
-                const nameMatch = line.match(/option: (.*?);/i);
-                const priceMatch = line.match(/Price:\s?(\d+)\s?USD/i);
-                const detailsMatch = line.match(/Details: (.*)/i);
+                const foodRegex = /^\d+\.\s(.+?)\s-\s(.+?)\s-\sEstimated\sprice:\s?\$?(\d+)/i;
+                const foodMatch = line.match(foodRegex);
 
-                if (!nameMatch || !priceMatch || !detailsMatch) {
+                if (!foodMatch) {
                     console.error(`Invalid data format for food line: ${line}`);
                     return null;
                 }
 
-                const name = nameMatch[1].trim();
-                const price = parseInt(priceMatch[1], 10);
-                const description = detailsMatch[1].trim();
-
-                if (!name || price === 0) {
-                    console.warn(`Skipping invalid food: name=${name}, price=${price}`);
-                    return null;
-                }
-
-                let image;
-                if (price > budget * 0.25) {
-                    image = highbudget;
-                } else if (price > budget * 0.15) {
-                    image = mediumbudget;
-                } else {
-                    image = lowbudget;
-                }
+                const name = foodMatch[1].trim();
+                const description = foodMatch[2].trim();
+                const price = parseInt(foodMatch[3], 10);
 
                 return {
                     id: index + 1,
                     name,
                     description,
                     price,
-                    image
+                    image: price > budget * 0.25 ? highPriceImg : price > budget * 0.15 ? mediumPriceImg : lowPriceImg
                 };
             } catch (error) {
-                console.error("Error parsing food line:", error);
+                console.error("Error parsing food line:", error, line);
                 return null;
             }
-        }).filter(item => item !== null); // סינון פריטים לא תקינים
+        }).filter(item => item !== null); // Filter out invalid items
     };
 
     const handleFoodClick = (food) => {
-        handleAddToCart(food);
-        navigate('/attractions');
+        handleAddToCart(food); // Add food to the cart
+        navigate('/attractions'); // Navigate to the attractions page
     };
 
+    useEffect(() => {
+        fetchFoods();
+    }, [budget, eventData]);
+
     return (
-        <FoodOptionsContainer>
+        <FoodContainer>
             <BackButtonComponent />
             {loading ? (
                 <>
@@ -140,14 +116,18 @@ const FoodOptions = () => {
             ) : (
                 <>
                     <FoodList>
-                        {foods.map((food) => (
-                            <CardComponent key={food.id} item={food} image={food.image} onClick={() => handleFoodClick(food)} />
-                        ))}
+                        {foods.length > 0 ? (
+                            foods.map((food) => (
+                                <CardComponent key={food.id} item={food} image={food.image} onClick={() => handleFoodClick(food)} />
+                            ))
+                        ) : (
+                            <p>No food options available</p>
+                        )}
                     </FoodList>
                     <LoadNewSuggestionsButton onClick={fetchFoods} loading={buttonLoading} />
                 </>
             )}
-        </FoodOptionsContainer>
+        </FoodContainer>
     );
 };
 

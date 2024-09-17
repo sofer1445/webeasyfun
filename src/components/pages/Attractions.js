@@ -9,9 +9,9 @@ import DynamicHeading from '../../Styled/DynamicHeading';
 import LoadNewSuggestionsButton from '../LoadNewSuggestionsButton';
 import BackButtonComponent from '../../Styled/BackButton';
 
-import highPrice from '../../images/attractions/High price attraction.jpg';
-import lowPrice from '../../images/attractions/Low price attraction.jpg';
-import mediumPrice from '../../images/attractions/Mid price attraction.jpg';
+import highPriceImg from '../../images/attractions/High price attraction.jpg';
+import mediumPriceImg from '../../images/attractions/Mid price attraction.jpg';
+import lowPriceImg from '../../images/attractions/Low price attraction.jpg';
 
 const AttractionsContainer = styled.div`
     display: flex;
@@ -24,9 +24,15 @@ const AttractionsContainer = styled.div`
 
 const AttractionsList = styled.div`
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    grid-gap: 2rem;
-    max-width: 1200px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); // שינוי מ-300px ל-250px
+    grid-gap: 1.5rem; // הקטנת הרווח בין הכרטיסים
+    max-width: 1000px; // הקטנת הרוחב הכללי של הרשימה
+`;
+
+const StyledImage = styled.img`
+    width: 100%;
+    height: auto;
+    max-height: 150px; // הגבלת הגובה המקסימלי של התמונה
 `;
 
 const Attractions = () => {
@@ -40,30 +46,18 @@ const Attractions = () => {
     const fetchAttractions = async () => {
         setButtonLoading(true);
         try {
-            const remainingBudget = budget;
-            const location = eventData.location;
-            const eventType = eventData.eventType;
-            const eventDate = eventData.eventDate;
-            const guestCount = eventData.guests;
-
-            const response = await fetch(`http://localhost:9125/get-suggested-attractions?eventType=${encodeURIComponent(eventType)}&eventDate=${encodeURIComponent(eventDate)}&guestCount=${encodeURIComponent(guestCount)}&remainingBudget=${remainingBudget}&location=${encodeURIComponent(location)}`);
+            const response = await fetch(
+                `http://localhost:9125/get-suggested-attractions?eventType=${encodeURIComponent(eventData.eventType)}&eventDate=${encodeURIComponent(eventData.eventDate)}&guestCount=${encodeURIComponent(eventData.guests)}&remainingBudget=${budget}&location=${encodeURIComponent(eventData.location)}`
+            );
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
 
             const data = await response.text();
-            console.log("Data from server:", data); // לוג כדי לוודא שהמידע מהשרת מגיע
-
-            if (!data.trim()) {
-                throw new Error("Received empty data from server");
-            }
+            console.log("Raw response from server:", data);
 
             const parsedAttractions = parseAttractionsData(data);
-            console.log("Parsed attractions:", parsedAttractions); // לוג אחרי הפענוח
-
-            if (parsedAttractions.length === 0) {
-                throw new Error("No valid attraction data parsed");
-            }
+            console.log("Parsed attractions:", parsedAttractions);
 
             setAttractions(parsedAttractions);
         } catch (error) {
@@ -75,40 +69,26 @@ const Attractions = () => {
         }
     };
 
-    useEffect(() => {
-        fetchAttractions();
-    }, [budget, eventData.location, eventData.eventType, eventData.eventDate, eventData.guests]);
-
     const parseAttractionsData = (data) => {
-        const attractionLines = data.trim().split('\n\n'); // חלוקה לפי שני רווחים ריקים כדי להפריד בין ההצעות השונות
+        console.log("Raw attraction data:", data);
+
+        const attractionLines = data.trim().split('\n').filter(line => !line.includes('No suitable attraction found'));  // Filter out unsuitable attractions
+
         return attractionLines.map((line, index) => {
             try {
-                const nameMatch = line.match(/option: (.*?);/i);
-                const priceMatch = line.match(/Price:\s?(\d+)\s?USD/i);
-                const detailsMatch = line.match(/Details: (.*)/i);
+                const attractionRegex = /^\d+\.\s(.+?)\s-\s(.+?)\s-\sEstimated\sprice:\s?\$?(\d+)/i;
+                const attractionMatch = line.match(attractionRegex);
 
-                if (!nameMatch || !priceMatch || !detailsMatch) {
+                if (!attractionMatch) {
                     console.error(`Invalid data format for attraction line: ${line}`);
                     return null;
                 }
 
-                const name = nameMatch[1].trim();
-                const price = parseInt(priceMatch[1], 10);
-                const description = detailsMatch[1].trim();
+                const name = attractionMatch[1].trim();
+                const description = attractionMatch[2].trim();
+                const price = parseInt(attractionMatch[3], 10);
 
-                if (!name || price === 0) {
-                    console.warn(`Skipping invalid attraction: name=${name}, price=${price}`);
-                    return null;
-                }
-
-                let image;
-                if (price > budget * 0.25) {
-                    image = highPrice;
-                } else if (price > budget * 0.15) {
-                    image = mediumPrice;
-                } else {
-                    image = lowPrice;
-                }
+                const image = price > budget * 0.25 ? highPriceImg : price > budget * 0.15 ? mediumPriceImg : lowPriceImg;
 
                 return {
                     id: index + 1,
@@ -118,16 +98,21 @@ const Attractions = () => {
                     image
                 };
             } catch (error) {
-                console.error("Error parsing attraction line:", error);
+                console.error("Error parsing attraction line:", error, line);
                 return null;
             }
-        }).filter(item => item !== null); // סינון פריטים לא תקינים
+        }).filter(item => item !== null);  // Filter invalid entries
     };
+
 
     const handleAttractionClick = (attraction) => {
         handleAddToCart(attraction);
         navigate('/chat');
     };
+
+    useEffect(() => {
+        fetchAttractions();
+    }, [budget, eventData]);
 
     return (
         <AttractionsContainer>
@@ -140,9 +125,18 @@ const Attractions = () => {
             ) : (
                 <>
                     <AttractionsList>
-                        {attractions.map((attraction) => (
-                            <CardComponent key={attraction.id} item={attraction} image={attraction.image} onClick={() => handleAttractionClick(attraction)} />
-                        ))}
+                        {attractions.length > 0 ? (
+                            attractions.map((attraction) => (
+                                <CardComponent
+                                    key={attraction.id}
+                                    item={attraction}
+                                    image={<StyledImage src={attraction.image} alt={attraction.name} />}
+                                    onClick={() => handleAttractionClick(attraction)}
+                                />
+                            ))
+                        ) : (
+                            <p>No attractions available</p>
+                        )}
                     </AttractionsList>
                     <LoadNewSuggestionsButton onClick={fetchAttractions} loading={buttonLoading} />
                 </>

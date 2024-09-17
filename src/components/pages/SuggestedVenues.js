@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import CardComponent from '../CardComponent';
 import { BudgetContext } from '../../Context/BudgetContext';
 import { EventContext } from '../../Context/EventContext';
 import Spinner from '../../Styled/Spinner';
+import CardComponent from '../CardComponent';
 import DynamicHeading from '../../Styled/DynamicHeading';
 import LoadNewSuggestionsButton from '../LoadNewSuggestionsButton';
 import BackButtonComponent from '../../Styled/BackButton';
@@ -38,95 +38,79 @@ const SuggestedVenues = () => {
     const [buttonLoading, setButtonLoading] = useState(false);
 
     const fetchVenues = async () => {
-        setButtonLoading(true);
-        try {
-            const remainingBudget = budget;
-            const location = eventData.location;
-            const eventType = eventData.eventType;
-            const eventDate = eventData.eventDate;
-            const guestCount = eventData.guests;
+        console.log("Start fetching venues...");
+        setLoading(true);
 
-            const response = await fetch(`http://localhost:9125/get-suggested-venues?eventType=${encodeURIComponent(eventType)}&eventDate=${encodeURIComponent(eventDate)}&guestCount=${encodeURIComponent(guestCount)}&remainingBudget=${remainingBudget}&location=${encodeURIComponent(location)}`);
+        try {
+            const response = await fetch(`http://localhost:9125/get-suggested-venues?eventType=${encodeURIComponent(eventData.eventType)}&eventDate=${encodeURIComponent(eventData.eventDate)}&guestCount=${encodeURIComponent(eventData.guests)}&remainingBudget=${budget}&location=${encodeURIComponent(eventData.location)}`);
+
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
 
-            const data = await response.text();
-            console.log("Data from server:", data); // הוספת הדפסה כדי לבדוק אם הנתונים מגיעים מהשרת
+            const rawText = await response.text(); // Fetch response as text
+            console.log("Raw response from server:", rawText);
 
-            if (!data.trim()) {
-                throw new Error("Received empty data from server");
+            if (!rawText || rawText.trim() === '') {
+                console.error("Empty response from server");
+                setVenues([]);
+                return;
             }
 
-            const parsedVenues = parseVenueData(data);
-            console.log("Parsed venues:", parsedVenues); // הדפסת הנתונים אחרי הפירוק
+            const parsedVenues = parseVenueData(rawText); // Parse response
+            console.log("Parsed venues:", parsedVenues);
 
-            if (parsedVenues.length === 0) {
-                throw new Error("No valid venue data parsed");
-            }
-
-            setVenues(parsedVenues);
+            setVenues(parsedVenues); // Update the state with parsed venues
         } catch (error) {
             console.error('Error fetching venues:', error);
             setVenues([]);
         } finally {
-            setLoading(false);
-            setButtonLoading(false);
+            setLoading(false); // Disable loading state
+            console.log("Fetching venues finished.");
         }
     };
 
-
-    useEffect(() => {
-        fetchVenues();
-    }, [budget, eventData.location, eventData.eventType, eventData.eventDate, eventData.guests]);
-
     const parseVenueData = (data) => {
-        const venueLines = data.trim().split('\n\n'); // חילוק המידע על פי שני שורות ריקות, מה שמפריד בין ההצעות השונות.
+        console.log("Raw venue data:", data); // Print raw data
+
+        const venueLines = data.trim().split('\n'); // Split lines by newline
 
         return venueLines.map((line, index) => {
             try {
-                // פיצול השורה לקטעים (שם, מחיר ותיאור) לפי המידע מהשרת
-                const nameMatch = line.match(/option: (.*?);/i);
-                const priceMatch = line.match(/Price:\s?(\d+)\s?USD/i);
-                const detailsMatch = line.match(/Details: (.*)/i);
+                const nameMatch = line.match(/^(.*?)\s*-\s*/); // Find venue name
+                const priceMatch = line.match(/Estimated price:\s*\$(\d+)/i); // Find price
 
-                if (!nameMatch || !priceMatch || !detailsMatch) {
+                if (!nameMatch || !priceMatch) {
                     console.error(`Invalid data format for venue line: ${line}`);
                     return null;
                 }
 
                 const name = nameMatch[1].trim();
                 const price = parseInt(priceMatch[1], 10);
-                const description = detailsMatch[1].trim();
-
-                let image;
-                if (price > budget * 0.25) {
-                    image = highPrice;
-                } else if (price > budget * 0.15) {
-                    image = mediumPrice;
-                } else {
-                    image = lowPrice;
-                }
+                const description = line.replace(nameMatch[0], '').replace(priceMatch[0], '').trim(); // Remove name and price to keep description
 
                 return {
                     id: index + 1,
                     name,
-                    description,
+                    description: description,
                     price,
-                    image
+                    image: price > budget * 0.25 ? highPrice : price > budget * 0.15 ? mediumPrice : lowPrice
                 };
             } catch (error) {
                 console.error("Error parsing venue line:", error);
                 return null;
             }
-        }).filter(item => item !== null); // סינון פריטים לא תקינים
+        }).filter(item => item !== null); // Filter invalid items
     };
-
 
     const handleVenueClick = (venue) => {
         handleAddToCart(venue);
-        navigate('/food-options');
+        navigate('/food-options'); // Navigate to food options page
     };
+
+    useEffect(() => {
+        fetchVenues();
+    }, [budget, eventData.location, eventData.eventType, eventData.eventDate, eventData.guests]);
 
     return (
         <VenuesContainer>
@@ -139,9 +123,13 @@ const SuggestedVenues = () => {
             ) : (
                 <>
                     <VenueList>
-                        {venues.map((venue) => (
-                            <CardComponent key={venue.id} item={venue} image={venue.image} onClick={() => handleVenueClick(venue)} />
-                        ))}
+                        {venues.length > 0 ? (
+                            venues.map((venue) => (
+                                <CardComponent key={venue.id} item={venue} image={venue.image} onClick={() => handleVenueClick(venue)} />
+                            ))
+                        ) : (
+                            <p>No venues available</p>
+                        )}
                     </VenueList>
                     <LoadNewSuggestionsButton onClick={fetchVenues} loading={buttonLoading} />
                 </>
