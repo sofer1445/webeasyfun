@@ -43,12 +43,24 @@ const Attractions = () => {
     const [loading, setLoading] = useState(true);
     const [buttonLoading, setButtonLoading] = useState(false);
 
+    const fetchWithTimeout = (url, options, timeout = 10000) => {
+        return Promise.race([
+            fetch(url, options),
+            new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Request timed out')), timeout)
+            )
+        ]);
+    };
+
     const fetchAttractions = async () => {
         setButtonLoading(true);
         try {
-            const response = await fetch(
-                `http://localhost:9125/get-suggested-attractions?eventType=${encodeURIComponent(eventData.eventType)}&eventDate=${encodeURIComponent(eventData.eventDate)}&guestCount=${encodeURIComponent(eventData.guests)}&remainingBudget=${budget}&location=${encodeURIComponent(eventData.location)}`
+            const response = await fetchWithTimeout(
+                `http://localhost:9125/get-suggested-attractions?eventType=${encodeURIComponent(eventData.eventType)}&eventDate=${encodeURIComponent(eventData.eventDate)}&guestCount=${encodeURIComponent(eventData.guests)}&remainingBudget=${budget}&location=${encodeURIComponent(eventData.location)}`,
+                { method: 'GET' },
+                15000 // זמן המתנה של 15 שניות
             );
+
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -68,7 +80,6 @@ const Attractions = () => {
             setButtonLoading(false);
         }
     };
-
     const parseAttractionsData = (data) => {
         console.log("Raw attraction data:", data);
 

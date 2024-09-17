@@ -20,66 +20,10 @@ const EventInfo = styled.div`
     background-color: #fff;
 `;
 
-const EditButton = styled.button`
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 0.5rem;
-    cursor: pointer;
-    border-radius: 5px;
-    margin-top: 1rem;
-`;
-
-const SaveButton = styled.button`
-    background-color: #008CBA;
-    color: white;
-    border: none;
-    padding: 0.5rem;
-    cursor: pointer;
-    border-radius: 5px;
-    margin-top: 1rem;
-`;
-
 const PersonalArea = ({ secret }) => {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [editingEvent, setEditingEvent] = useState(null);
-    const [editedEvent, setEditedEvent] = useState({});
-
-    const handleEditEvent = (event) => {
-        setEditingEvent(event);
-        setEditedEvent(event);
-    };
-
-    const handleSaveEvent = async () => {
-        try {
-            const response = await fetch('/edit-event', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(editedEvent),
-            });
-            if (response.ok) {
-                console.log('Event edited successfully');
-                setEditingEvent(null);
-                fetchData(); // Refresh the data
-            } else {
-                console.error('Failed to edit event');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    };
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setEditedEvent((prevEvent) => ({
-            ...prevEvent,
-            [name]: value,
-        }));
-    };
 
     const fetchData = async () => {
         try {
@@ -137,62 +81,12 @@ const PersonalArea = ({ secret }) => {
             </UserInfo>
             {events.map((event, index) => (
                 <EventInfo key={index}>
-                    {editingEvent && editingEvent.id === event.id ? (
-                        <>
-                            <label>Type of Event:</label>
-                            <input
-                                type="text"
-                                name="typeEvent"
-                                value={editedEvent.typeEvent}
-                                onChange={handleChange}
-                            />
-                            <label>Date:</label>
-                            <input
-                                type="text"
-                                name="date"
-                                value={editedEvent.date}
-                                onChange={handleChange}
-                            />
-                            <label>Location:</label>
-                            <input
-                                type="text"
-                                name="location"
-                                value={editedEvent.location}
-                                onChange={handleChange}
-                            />
-                            <label>Budget:</label>
-                            <input
-                                type="text"
-                                name="budget"
-                                value={editedEvent.budget}
-                                onChange={handleChange}
-                            />
-                            <label>Guests:</label>
-                            <input
-                                type="text"
-                                name="guests"
-                                value={editedEvent.guests}
-                                onChange={handleChange}
-                            />
-                            <label>Elements of Event:</label>
-                            <input
-                                type="text"
-                                name="elementsOfEvent"
-                                value={editedEvent.elementsOfEvent.join(', ')}
-                                onChange={handleChange}
-                            />
-                            <SaveButton onClick={handleSaveEvent}>Save</SaveButton>
-                        </>
-                    ) : (
-                        <>
-                            <h3>{event.typeEvent} on {event.date}</h3>
-                            <p>Location: {event.location}</p>
-                            <p>Budget: {event.budget}</p>
-                            <p>Guests: {event.guests}</p>
-                            <p>Elements: {event.elementsOfEvent.join(', ')}</p>
-                            <EditButton onClick={() => handleEditEvent(event)}>Edit</EditButton>
-                        </>
-                    )}
+                    <p>Type of Event: {event.typeEvent}</p>
+                    <p>Date: {event.date}</p>
+                    <p>Location: {event.location}</p>
+                    <p>Budget: {event.budget}</p>
+                    <p>Guests: {event.guests}</p>
+                    <p>Elements of Event: {event.elementsOfEvent.join(', ')}</p>
                 </EventInfo>
             ))}
         </PersonalAreaContainer>

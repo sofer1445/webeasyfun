@@ -87,10 +87,8 @@ const ShoppingCart = () => {
 
     // Load cart items from localStorage when the component mounts
     useEffect(() => {
-        const savedCartItems = JSON.parse(localStorage.getItem('cartItems'));
-        if (savedCartItems) {
-            setCartItems(savedCartItems);
-        }
+        const savedCartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+        setCartItems(savedCartItems);
     }, [setCartItems]);
 
     // Save cart items to localStorage whenever cartItems changes

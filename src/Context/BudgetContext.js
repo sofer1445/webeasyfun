@@ -1,4 +1,3 @@
-// src/Context/BudgetContext.js
 import React, { createContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid'; // Import UUID library for unique IDs
 
@@ -8,19 +7,15 @@ export const BudgetProvider = ({ children, initialBudget = 0 }) => {
     const [budget, setBudget] = useState(initialBudget);
     const [cartItems, setCartItems] = useState([]);
 
-    // שליפת עגלה ושחזור תקציב מ-localStorage בעת הטעינה
+    // Fetch cart and budget from localStorage on load
     useEffect(() => {
-        const savedCartItems = JSON.parse(localStorage.getItem('cartItems'));
-        const savedBudget = JSON.parse(localStorage.getItem('budget'));
-        if (savedCartItems) {
-            setCartItems(savedCartItems);
-        }
-        if (savedBudget) {
-            setBudget(savedBudget);
-        }
-    }, []);
+        const savedCartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+        const savedBudget = JSON.parse(localStorage.getItem('budget')) || initialBudget;
+        setCartItems(savedCartItems);
+        setBudget(savedBudget);
+    }, [initialBudget]);
 
-    // שמירת עגלה ותקציב ב-localStorage בכל פעם שיש שינוי
+    // Save cart and budget to localStorage on change
     useEffect(() => {
         localStorage.setItem('cartItems', JSON.stringify(cartItems));
         localStorage.setItem('budget', JSON.stringify(budget));

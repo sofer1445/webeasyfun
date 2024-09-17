@@ -141,7 +141,7 @@ const EventPlanning = () => {
     const [isButtonDisabled, setIsButtonDisabled] = useState(false);
     const [formChanged, setFormChanged] = useState(false);
     const { user } = useContext(UserContext);
-    const { budget, addToCart } = useContext(BudgetContext);
+    const { budget, handleAddToCart } = useContext(BudgetContext); // Corrected function name
     const { setEventData } = useContext(EventContext);
 
     useEffect(() => {
@@ -208,10 +208,9 @@ const EventPlanning = () => {
             setIsButtonDisabled(true);
             setFormChanged(false);
         } else {
-            proceedToSuggestedVenues(secret);
+            await createEvent(secret);
         }
     };
-
 
     const callUserSecret = async () => {
         try {
@@ -235,26 +234,23 @@ const EventPlanning = () => {
         }
     };
 
-    const proceedToSuggestedVenues = async (secret) => {
+    const createEvent = async (secret) => {
         try {
-            const response = await axios.post(`http://localhost:9125/plan-event`, {
-                secret,
-                typeEvent: eventType,
-                date: eventDate,
-                location,
-                guests,
-                budget
-            });
-            setEventData({ eventType, eventDate, location, guests, budget, eventId: response.data });
+            console.log('Creating event...');
+            const response = await axios.get(`http://localhost:9125/plan-event?secret=${encodeURIComponent(secret)}&typeEvent=${encodeURIComponent(eventType)}&date=${encodeURIComponent(eventDate)}&location=${encodeURIComponent(location)}&guests=${encodeURIComponent(guests)}&budget=${encodeURIComponent(budget)}`);
+
+            const eventId = response.data;
+            setEventData({ eventType, eventDate, location, guests, budget, eventId });
+
             navigate('/suggested-venues');
         } catch (error) {
-            console.error('Error proceeding to suggested venues:', error);
+            console.error('Error creating event:', error);
         }
     };
 
     const handleSelectEvent = (event) => {
         setEventData(event); // Update the event data in the context
-        addToCart(event); // Add event details to the cart
+        handleAddToCart(event); // Corrected function name
         navigate('/chat'); // Navigate to the chat page
     };
 
@@ -322,4 +318,3 @@ const EventPlanning = () => {
 };
 
 export default EventPlanning;
-

@@ -1,164 +1,143 @@
-import React, {useContext, useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import styled, {keyframes} from 'styled-components';
-import {EventContext} from '../../Context/EventContext';
-import {BudgetContext} from '../../Context/BudgetContext';
+import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import styled, { keyframes } from 'styled-components';
+import { EventContext } from '../../Context/EventContext';
+import { BudgetContext } from '../../Context/BudgetContext';
 import Spinner from "../../Styled/Spinner";
 import CardComponent from '../CardComponent';
 import chatHigh from '../../images/aiChat/chatHigh.webp';
 import chatLow from '../../images/aiChat/chatLow.webp';
 import chatMedium from '../../images/aiChat/chatMid.webp';
 
-// Animation for spinner
-const spin = keyframes`
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
+// עיצוב הצ'אט המורחב והכפתורים
+const ChatHeader = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: #333; /* רקע אפור כהה */
+    color: #fff; /* טקסט לבן */
+    border-bottom: 1px solid #555; /* גבול אפור כהה יותר */
+    border-radius: 12px 12px 0 0;
+    font-size: 18px;
+    cursor: pointer;
+`;
+
+const Message = styled.div`
+    margin-bottom: 15px;
+    text-align: ${({$sender}) => ($sender === 'user' ? 'right' : 'left')};
+    color: ${({$sender}) => ($sender === 'user' ? '#e9ecef' : '#007bff')};
+    background-color: ${({$sender}) => ($sender === 'user' ? '#444' : '#343a40')}; /* גוון כהה יותר להודעות */
+    padding: 12px;
+    border-radius: 12px;
+    max-width: 80%;
+    margin: ${({$sender}) => ($sender === 'user' ? '0 0 0 auto' : '0 auto 0 0')};
 `;
 
 const ChatContainer = styled.div`
-    ${({$minimized}) => $minimized ? 'height: 50px;' : 'max-height: 50vh;'}; /* שינוי גובה אם ממוזער */
+    ${({ $minimized }) => $minimized ? 'height: 50px;' : 'max-height: 70vh;'}; /* הגבהת הצ'אט */
     position: fixed;
     bottom: 20px;
-    left: 20px; /* מיקום שמאלי תחתון */
-    width: 400px; /* רוחב הצ'אט */
-    background-color: #f1f1f1;
+    left: 20px;
+    width: 450px; /* הרחבת הצ'אט */
+    background-color: #1e1e1e;
     border-radius: 10px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-    z-index: 1050; /* z-index גבוה יותר כדי למנוע חפיפות */
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    z-index: 1050;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     transition: all 0.3s ease;
 `;
 
-const ChatHeader = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px;
-    background-color: #343a40;
-    color: white;
-    border-bottom: 1px solid #ddd;
-    border-radius: 10px 10px 0 0;
-    font-size: 18px;
-    cursor: pointer; /* שינוי סמן ללחיצה */
-`;
-
 const ChatBody = styled.div`
     flex: 1;
     padding: 15px;
-    overflow-y: auto; /* גלילה במקרה של הרבה הודעות */
-    background-color: #ffffff;
-    display: ${({$minimized}) => $minimized ? 'none' : 'block'}; /* הסתרת גוף הצ'אט במצב ממוזער */
-`;
-
-const Message = styled.div`
-    margin-bottom: 15px;
-    text-align: ${({$sender}) => ($sender === 'user' ? 'right' : 'left')};
-    color: ${({$sender}) => ($sender === 'user' ? '#212529' : '#007bff')};
-    background-color: ${({$sender}) => ($sender === 'user' ? '#e9ecef' : '#d4edda')};
-    padding: 10px;
-    border-radius: 12px;
-    max-width: 80%;
-    margin: ${({$sender}) => ($sender === 'user' ? '0 0 0 auto' : '0 auto 0 0')};
+    overflow-y: auto;
+    background-color: #2b2b2b;
+    display: ${({ $minimized }) => $minimized ? 'none' : 'block'};
+    max-height: calc(100% - 100px); /* התאמה לגובה הכפתורים */
 `;
 
 const ChatFooter = styled.div`
     padding: 10px;
-    border-top: 1px solid #ddd;
+    border-top: 1px solid #555;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #f8f9fa;
-    gap: 8px; /* מרווח בין הכפתורים */
+    background-color: #1e1e1e;
+    gap: 8px;
+    min-height: 60px; /* גובה מינימלי לרגל הצ'אט */
 `;
 
 const Input = styled.input`
     flex: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-`;
-
-const SendButton = styled.button`
-    padding: 10px 15px;
-    background-color: #007bff;
-    color: white;
+    padding: 12px;
+    background-color: #333;
+    color: #fff;
     border: none;
-    border-radius: 5px;
-    cursor: pointer;
-
-    &:hover {
-        background-color: #0056b3;
+    border-radius: 8px;
+    outline: none;
+    ::placeholder {
+        color: #888; /* טקסט placeholder בגוון אפור */
     }
-
-    ${({disabled}) => disabled && 'opacity: 0.6; cursor: not-allowed;'}
 `;
 
 const RetryButton = styled.button`
-    padding: 10px 15px;
-    background-color: #ffc107;
+    padding: 10px 16px;
+    background-color: #f0ad4e;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
-
     &:hover {
-        background-color: #e0a800;
+        background-color: #ec971f;
     }
 `;
 
 const FinishButton = styled.button`
-    padding: 10px 15px;
+    padding: 10px 16px;
     background-color: #28a745;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
-
     &:hover {
         background-color: #218838;
     }
 `;
 
 const SuggestionsList = styled.div`
-    position: fixed; /* שונה כדי למנוע מהכרטיסיות להיות צמודות לצ'אט */
-    top: 100px; /* נותן מרווח מלמעלה */
-    left: 50%; /* ממרכז את הכרטיסיות בעמוד */
-    transform: translateX(-50%); /* ממרכז את הכרטיסיות */
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* כרטיסיות עם פריסה רחבה יותר */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     grid-gap: 1.5rem;
     max-width: 1200px;
     padding: 20px;
-    background-color: #f5f5f5;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1060; /* z-index גבוה כדי להציג מעל הצ'אט */
+    background-color: #2e2e2e;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1060;
     margin-bottom: 20px;
 `;
 
-
-const FloatingChat = ({onClose}) => {
+const FloatingChat = ({ onClose }) => {
     const [messages, setMessages] = useState([]);
     const [userInput, setUserInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
-    const [minimized, setMinimized] = useState(false); // משתנה למצבים ממוזערים
+    const [minimized, setMinimized] = useState(false);
     const navigate = useNavigate();
-    const {eventData} = useContext(EventContext);
-    const {budget, cartItems, handleAddToCart} = useContext(BudgetContext);
+    const { eventData } = useContext(EventContext);
+    const { budget, cartItems, handleAddToCart } = useContext(BudgetContext);
 
-    // פונקציה לסיום התכנון וניווט לעמוד הסיכום
     const handleFinishPlanning = () => {
-        navigate('/summary'); // ניווט לעמוד הסיכום
+        navigate('/summary');
     };
 
-    // Initial message when chat starts
     useEffect(() => {
         const initialMessage = `
             Event Summary:
@@ -170,15 +149,19 @@ const FloatingChat = ({onClose}) => {
 
             ${budget > 0 ? `I see you have a remaining budget of $${budget}. Let me show you some additional options to make your event truly exceptional!` : 'You’ve exceeded your budget. Would you like to review and adjust your selections?'}
             `;
-        setMessages([{text: initialMessage, sender: 'bot'}]);
+        setMessages([{ text: initialMessage, sender: 'bot' }]);
         sendMessage(initialMessage, true);
     }, [eventData, budget, cartItems]);
 
-    // Function to load suggestions from the server
+    const fetchWithTimeout = (url, options, timeout = 10000) => {
+        return Promise.race([
+            fetch(url, options),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), timeout))
+        ]);
+    };
+
     const sendMessage = async (message = userInput, isInitial = false, isRetry = false) => {
         if (typeof message !== 'string' || message.trim() === '') return;
-
-        console.log('sendMessage called with:', { message, isInitial, isRetry });
 
         let newMessages = [...messages];
         if (!isRetry) {
@@ -189,30 +172,25 @@ const FloatingChat = ({onClose}) => {
         setLoading(true);
 
         try {
-            const response = await fetch(`http://localhost:9125/chat?message=${encodeURIComponent(message)}&eventDate=${encodeURIComponent(eventData.eventDate)}&guestCount=${encodeURIComponent(eventData.guests)}&totalBudget=${encodeURIComponent(eventData.budget)}&remainingBudget=${encodeURIComponent(budget)}&selectedItems=${encodeURIComponent(cartItems.map(item => item.name).join(', '))}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+            const response = await fetchWithTimeout(
+                `http://localhost:9125/chat?message=${encodeURIComponent(message)}&eventDate=${encodeURIComponent(eventData.eventDate)}&guestCount=${encodeURIComponent(eventData.guests)}&totalBudget=${encodeURIComponent(eventData.budget)}&remainingBudget=${encodeURIComponent(budget)}&selectedItems=${encodeURIComponent(cartItems.map(item => item.name).join(', '))}`,
+                { method: 'GET', headers: { 'Content-Type': 'application/json' } },
+                15000
+            );
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.text();
-            console.log("Response from server: ", data);
-
             if (!isRetry) {
                 setMessages(prevMessages => [...prevMessages, { text: data.split(' - ')[0], sender: 'bot' }]);
             }
 
             const parsedSuggestions = parseSuggestions(data);
-            console.log("Parsed suggestions: ", parsedSuggestions);
             setSuggestions(parsedSuggestions);
 
         } catch (error) {
-            console.error('Error:', error);
             if (!isRetry) {
                 setMessages([...newMessages, { text: `Error contacting the server: ${error.message}`, sender: 'bot' }]);
             }
@@ -221,11 +199,6 @@ const FloatingChat = ({onClose}) => {
         }
     };
 
-    <RetryButton onClick={() => {
-        console.log('RetryButton clicked');
-        sendMessage(userInput, false, true);
-    }}>Load New Suggestions</RetryButton>
-
     const parseSuggestions = (data) => {
         const suggestionLines = data.trim().split('\n').filter(line => line.match(/Estimated price/i));
 
@@ -233,12 +206,10 @@ const FloatingChat = ({onClose}) => {
             const nameMatch = line.match(/^\s*Option \d+:\s*([^-]+)\s*-/);
 
             if (!nameMatch) {
-                console.error(`Invalid data format for suggestion: ${line}`);
                 return null;
             }
 
             const name = nameMatch[1].trim();
-            const description = line.replace(nameMatch[0], '').trim();
             const priceMatch = line.match(/Estimated price:\s*\$?(\d+)/i);
             const price = priceMatch ? parseInt(priceMatch[1], 10) : 0;
             let image = {
@@ -250,7 +221,6 @@ const FloatingChat = ({onClose}) => {
             return {
                 id: index + 1,
                 name,
-                description,
                 price,
                 image
             };
@@ -259,18 +229,16 @@ const FloatingChat = ({onClose}) => {
 
     const handleSuggestionClick = (suggestion) => {
         handleAddToCart(suggestion);
-        setMessages([...messages, {text: `You added: ${suggestion.name}`, sender: 'user'}]);
+        setMessages([...messages, { text: `You added: ${suggestion.name}`, sender: 'user' }]);
         setSuggestions([]);
     };
 
-    // Send message on Enter key press
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             sendMessage();
         }
     };
 
-    // Toggle minimize chat
     const toggleMinimize = () => {
         setMinimized(!minimized);
     };
@@ -278,7 +246,7 @@ const FloatingChat = ({onClose}) => {
     return (
         <>
             <ChatContainer $minimized={minimized}>
-                <ChatHeader onClick={toggleMinimize}> {/* שינוי - לחיצה על הכותרת למזעור/החזרה */}
+                <ChatHeader onClick={toggleMinimize}>
                     <span>Chat</span>
                     <button onClick={onClose}>X</button>
                 </ChatHeader>
@@ -299,14 +267,9 @@ const FloatingChat = ({onClose}) => {
                             onKeyDown={handleKeyDown}
                             disabled={loading}
                         />
-                        <SendButton onClick={sendMessage} disabled={loading}>Send</SendButton>
-                        {loading && <Spinner/>} {/* ספינר בזמן טעינה */}
-                        <RetryButton onClick={() => {
-                            console.log('RetryButton clicked');
-                            sendMessage(userInput, false, true);
-                        }}>Load New Suggestions</RetryButton>
-                        <FinishButton onClick={handleFinishPlanning}>Finish
-                        Planning</FinishButton>
+                        {loading && <Spinner />}
+                        <RetryButton onClick={() => sendMessage(userInput, false, true)}>Load New Suggestions</RetryButton>
+                        <FinishButton onClick={handleFinishPlanning}>Finish Planning</FinishButton>
                     </ChatFooter>
                 )}
             </ChatContainer>

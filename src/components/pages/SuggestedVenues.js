@@ -37,12 +37,27 @@ const SuggestedVenues = () => {
     const [loading, setLoading] = useState(true);
     const [buttonLoading, setButtonLoading] = useState(false);
 
+    // פונקציה לביצוע קריאה עם מגבלת זמן
+    const fetchWithTimeout = (url, options, timeout = 10000) => {
+        return Promise.race([
+            fetch(url, options),
+            new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Request timed out')), timeout)
+            )
+        ]);
+    };
+
+// דוגמה לשימוש ב-fetchWithTimeout עבור קריאה ל-fetchVenues
     const fetchVenues = async () => {
         console.log("Start fetching venues...");
         setLoading(true);
 
         try {
-            const response = await fetch(`http://localhost:9125/get-suggested-venues?eventType=${encodeURIComponent(eventData.eventType)}&eventDate=${encodeURIComponent(eventData.eventDate)}&guestCount=${encodeURIComponent(eventData.guests)}&remainingBudget=${budget}&location=${encodeURIComponent(eventData.location)}`);
+            const response = await fetchWithTimeout(
+                `http://localhost:9125/get-suggested-venues?eventType=${encodeURIComponent(eventData.eventType)}&eventDate=${encodeURIComponent(eventData.eventDate)}&guestCount=${encodeURIComponent(eventData.guests)}&remainingBudget=${budget}&location=${encodeURIComponent(eventData.location)}`,
+                { method: 'GET' },
+                15000 // זמן המתנה של 15 שניות
+            );
 
             if (!response.ok) {
                 throw new Error('Network response was not ok');

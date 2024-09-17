@@ -1,5 +1,5 @@
-import React, {useContext, useState} from 'react';
-import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import React, { useContext, useState, useEffect } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import HomePage from './components/pages/HomePage';
 import SignUp from './components/pages/SignUp';
 import AboutUs from './components/pages/AboutUs';
@@ -13,9 +13,10 @@ import Summary from "./components/pages/Summary";
 import Login from "./components/pages/Login";
 import UserProfile from "./components/infoUser/UserProfile";
 import FloatingChat from "./components/chat/FloatingChat";
-import {UserContext} from './Context/UserContext';
-import {EventProvider} from './Context/EventContext';
-import styled, {keyframes} from 'styled-components';
+import { UserContext } from './Context/UserContext';
+import { EventProvider } from './Context/EventContext';
+import { BudgetProvider } from './Context/BudgetContext';
+import styled, { keyframes } from 'styled-components';
 import LogoImgRooster from './images/logo/LogoImgRooster.jpeg';
 import Layout from './components/Layout';
 
@@ -68,11 +69,30 @@ const App = () => {
     const [showChat, setShowChat] = useState(false);
     const [minimized, setMinimized] = useState(false);
     const [remainingBudget, setRemainingBudget] = useState(0);
-    const {user} = useContext(UserContext);
+    const { user } = useContext(UserContext);
+    const location = useLocation();
+
+    useEffect(() => {
+        const savedCartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+        setCartItems(savedCartItems);
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    }, [cartItems]);
+
+    useEffect(() => {
+        if (location.pathname === '/') {
+            setCartItems([]);
+            localStorage.removeItem('cartItems');
+        }
+    }, [location.pathname]);
 
     const handleAddToCart = (item) => {
         setCartItems([...cartItems, item]);
         setRemainingBudget((prevBudget) => prevBudget - item.price);
+        localStorage.setItem('cartItems', JSON.stringify([...cartItems, item]));
+        localStorage.setItem('remainingBudget', JSON.stringify(remainingBudget - item.price));
     };
 
     const handleCloseUserProfile = () => {
@@ -106,28 +126,29 @@ const App = () => {
 
     return (
         <EventProvider>
-            <Router>
+            <BudgetProvider>
                 <Layout>
-                    {user && showUserProfile && <UserProfile onClose={handleCloseUserProfile}/>}
-                    {!showUserProfile &&
-                        <ShowProfileButton onClick={handleShowUserProfile}>Show Profile</ShowProfileButton>}
-                    <ShoppingCart cartItems={cartItems} onOpenChat={handleOpenChat}/>
+                    {user && showUserProfile && <UserProfile onClose={handleCloseUserProfile} />}
+                    {!showUserProfile && (
+                        <ShowProfileButton onClick={handleShowUserProfile}>Show Profile</ShowProfileButton>
+                    )}
+                    <ShoppingCart cartItems={cartItems} onOpenChat={handleOpenChat} />
                     <Routes>
-                        <Route path="/" element={<HomePage/>}/>
-                        <Route path="/signup" element={<SignUp/>}/>
-                        <Route path="/login" element={<Login/>}/>
-                        <Route path="/about" element={<AboutUs/>}/>
-                        <Route path="/contact" element={<Contact/>}/>
-                        <Route path="/plan-event" element={showEventPlanning ? <EventPlanning/> : null}/>
-                        <Route path="/suggested-venues" element={<SuggestedVenues addToCart={handleAddToCart}/>}/>
-                        <Route path="/food-options" element={<FoodOptions addToCart={handleAddToCart}/>}/>
-                        <Route path="/attractions" element={<Attractions addToCart={handleAddToCart}/>}/>
-                        <Route path="/chat" element={<FloatingChat onClose={handleCloseChat} minimized={minimized}/>}/>
-                        <Route path="/summary" element={<Summary cartItems={cartItems}/>}/>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/signup" element={<SignUp />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/about" element={<AboutUs />} />
+                        <Route path="/contact" element={<Contact />} />
+                        <Route path="/plan-event" element={showEventPlanning ? <EventPlanning /> : null} />
+                        <Route path="/suggested-venues" element={<SuggestedVenues addToCart={handleAddToCart} />} />
+                        <Route path="/food-options" element={<FoodOptions addToCart={handleAddToCart} />} />
+                        <Route path="/attractions" element={<Attractions addToCart={handleAddToCart} />} />
+                        <Route path="/chat" element={<FloatingChat onClose={handleCloseChat} minimized={minimized} />} />
+                        <Route path="/summary" element={<Summary cartItems={cartItems} />} />
                     </Routes>
-                    {/*<Logo src={LogoImgRooster} alt="Logo" onClick={handleLogoClick}/>*/}
+                    {/*<Logo src={LogoImgRooster} alt="Logo" onClick={handleLogoClick} />*/}
                 </Layout>
-            </Router>
+            </BudgetProvider>
         </EventProvider>
     );
 };

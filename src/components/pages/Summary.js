@@ -83,7 +83,6 @@ const CreateEventButton = styled.button`
 
 const sendUserSelections = async (eventId, elements) => {
     try {
-        // הסר כפילויות
         const uniqueElements = Array.from(new Set(elements));
         const response = await fetch(`http://localhost:9125/save-selection?eventId=${eventId}`, {
             method: 'POST',
@@ -95,26 +94,26 @@ const sendUserSelections = async (eventId, elements) => {
 
         if (!response.ok) {
             console.error('Server call failed:', response);
+            return false;
         } else {
             console.log('Selections saved successfully');
+            return true;
         }
     } catch (error) {
         console.error('Error creating event:', error);
+        return false;
     }
 };
-
 
 const Summary = () => {
     const navigate = useNavigate();
     const { user, venue, food, attraction } = useContext(UserContext);
     const { eventData } = useContext(EventContext);
-    const { cartItems } = useContext(BudgetContext);
+    const { cartItems, setCartItems } = useContext(BudgetContext);
     const [secret, setSecret] = useState(null);
 
     useEffect(() => {
-        console.log('User object:', user); // Log the user object
         if (user?.secret) {
-            console.log('User secret:', user.secret); // Log the user secret
             setSecret(user.secret);
         }
     }, [user]);
@@ -135,11 +134,16 @@ const Summary = () => {
             ...cartItems.map(item => item.name)
         ].filter(Boolean);
 
-        await sendUserSelections(eventData.eventId, elements);
-        alert('תכנון האירוע נוצר בהצלחה');
-        navigate('/'); // Navigate to home page
+        const success = await sendUserSelections(eventData.eventId, elements);
+        if (success) {
+            setCartItems([]); // Clear the cart items
+            localStorage.removeItem('cartItems'); // Clear localStorage
+            alert('תכנון האירוע נוצר בהצלחה');
+            navigate('/'); // Navigate to home page
+        } else {
+            alert('Failed to create event');
+        }
     };
-
 
     const handleHomeClick = () => {
         navigate('/'); // Navigate to home page
