@@ -9,9 +9,9 @@ import DynamicHeading from '../../Styled/DynamicHeading';
 import LoadNewSuggestionsButton from '../LoadNewSuggestionsButton';
 import BackButtonComponent from '../../Styled/BackButton';
 
-import highPriceImg from '../../images/attractions/High price attraction.jpg';
-import mediumPriceImg from '../../images/attractions/Mid price attraction.jpg';
-import lowPriceImg from '../../images/attractions/Low price attraction.jpg';
+import highPriceImg from '../../images/attractions/High_price_attraction.jpg';
+import mediumPriceImg from '../../images/attractions/Mid_price_attraction.jpg';
+import lowPriceImg from '../../images/attractions/Low_price_attraction.jpg';
 
 const AttractionsContainer = styled.div`
     display: flex;

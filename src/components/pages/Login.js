@@ -1,16 +1,17 @@
 import React, { useContext, useState } from 'react';
 import { UserContext } from '../../Context/UserContext';
+import { AuthContext } from '../../Context/AuthContext'; // ייבוא AuthContext
 import styled from 'styled-components';
 import EmailValidation from '../../Validation/EmailValidation';
 import PasswordValidation from '../../Validation/PasswordValidation';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // ייבוא Link לצורך ניווט
 
 const LoginContainer = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    height: 40vh;
     background-color: #f5f5f5;
 `;
 
@@ -39,12 +40,24 @@ const Button = styled.button`
     }
 `;
 
+const SignUpLink = styled(Link)`
+    margin-top: 1rem;
+    text-decoration: none;
+    color: #007bff;
+    font-size: 0.9rem;
+
+    &:hover {
+        text-decoration: underline;
+    }
+`;
+
 const Login = () => {
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState('');
     const [password, setPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const { login } = useContext(UserContext);
+    const { handleLogin } = useContext(AuthContext); // שימוש ב-AuthContext
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -59,9 +72,10 @@ const Login = () => {
             const data = await response.json();
             console.log(data);
 
-            // If login is successful, redirect to home page
+            // אם ההתחברות מצליחה, עדכני את AuthContext ונווטי לעמוד הבית
             if (response.ok) {
                 login({ email, secret: data.secret });
+                handleLogin(); // עדכון המשתמש כמחובר ב-AuthContext
                 navigate('/');
             }
         } catch (error) {
@@ -85,6 +99,7 @@ const Login = () => {
                     setPasswordError={setPasswordError}
                 />
                 <Button type="submit">Login</Button>
+                <SignUpLink to="/signup">Don't have an account? Sign Up</SignUpLink> {/* כפתור ה-Sign Up */}
             </LoginForm>
         </LoginContainer>
     );

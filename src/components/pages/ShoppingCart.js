@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { BudgetContext } from '../../Context/BudgetContext';
+import { AuthContext } from '../../Context/AuthContext'; // ייבוא AuthContext
 import ShoppingCartIcon from '../../images/ShoppingCartIcon.jpeg';
 
 const ShoppingCartContainer = styled.div`
@@ -83,15 +84,21 @@ const RemainingBudget = styled.p`
 
 const ShoppingCart = () => {
     const { budget, cartItems, handleRemoveFromCart, setCartItems } = useContext(BudgetContext);
+    const { isAuthenticated } = useContext(AuthContext); // בדיקת מצב החיבור
     const [showCart, setShowCart] = useState(false);
 
-    // Load cart items from localStorage when the component mounts
+    // סגירת העגלה אם המשתמש מתנתק
+    useEffect(() => {
+        if (!isAuthenticated) {
+            setShowCart(false); // הסתרת העגלה אם המשתמש לא מחובר
+        }
+    }, [isAuthenticated]);
+
     useEffect(() => {
         const savedCartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
         setCartItems(savedCartItems);
     }, [setCartItems]);
 
-    // Save cart items to localStorage whenever cartItems changes
     useEffect(() => {
         localStorage.setItem('cartItems', JSON.stringify(cartItems));
     }, [cartItems]);
@@ -99,6 +106,11 @@ const ShoppingCart = () => {
     const handleCartClick = () => {
         setShowCart(!showCart);
     };
+
+    // אם המשתמש לא מחובר, לא להציג את העגלה כלל
+    if (!isAuthenticated) {
+        return null;
+    }
 
     return (
         <>

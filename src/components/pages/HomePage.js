@@ -1,9 +1,8 @@
-import React, {useContext, useRef, useState} from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import React, { useContext, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import {BudgetContext} from '../../Context/BudgetContext';
-import {UserContext} from '../../Context/UserContext';
-import PersonalArea from '../infoUser/PersonalArea';
+import { BudgetContext } from '../../Context/BudgetContext';
+import { UserContext } from '../../Context/UserContext';
 import NavBarComponent from "./NavBarComponent";
 
 const HomePageContainer = styled.div`
@@ -70,86 +69,13 @@ const SearchButton = styled.button`
         background-color: #ccc;
         cursor: not-allowed;
     }
-
-    .
-`;
-
-const NavButtons = styled.div`
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-`;
-
-const NavButton = styled(Link)`
-    background-color: #fff;
-    color: #333;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-
-    &:hover {
-        background-color: #f5f5f5;
-    }
-`;
-
-const PersonalAreaButton = styled.button`
-    padding: 1rem 2rem;
-    font-size: 1.5rem;
-    color: #fff;
-    background-color: #333;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 2rem;
-`;
-
-const ModalOverlay = styled.div`
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    overflow-y: auto;
-`;
-
-const ModalContent = styled.div`
-    background-color: #fff;
-    padding: 2rem;
-    border-radius: 10px;
-    position: relative;
-    width: 90%;
-    max-width: 800px;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-`;
-
-const CloseButton = styled.button`
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #333;
 `;
 
 const HomePage = () => {
     const navigate = useNavigate();
     const budgetRef = useRef(null);
-    const {setBudget} = useContext(BudgetContext);
-    const {user} = useContext(UserContext);
-    const [showPersonalArea, setShowPersonalArea] = useState(false);
+    const { setBudget } = useContext(BudgetContext);
+    const { user } = useContext(UserContext);
     const [budget, setBudgetValue] = useState('');
 
     const handleStartPlanning = () => {
@@ -158,23 +84,11 @@ const HomePage = () => {
         navigate('/plan-event');
     };
 
-    const handlePersonalAreaClick = () => {
-        if (user && user.secret) {
-            setShowPersonalArea(true);
-        } else {
-            alert('Unable to access personal area. User is not logged in or secret is missing.');
-        }
-    };
-
-    const handleClosePersonalArea = () => {
-        setShowPersonalArea(false);
-    };
-
     const isBudgetValid = budget && !isNaN(budget) && parseFloat(budget) > 0;
 
     return (
         <>
-            <NavBarComponent/>
+            <NavBarComponent />
             <HomePageContainer>
                 <HeaderSection>
                     <Logo>Easy Fun</Logo>
@@ -191,28 +105,9 @@ const HomePage = () => {
                         required
                     />
                     <Link to="/plan-event" onClick={handleStartPlanning}>
-
                         <SearchButton disabled={!isBudgetValid}>Start Planning</SearchButton>
                     </Link>
                 </SearchSection>
-                {/*<NavButtons>*/}
-                {/*    <NavButton to="/about">About Us</NavButton>*/}
-                {/*    <NavButton to="/contact">Contact</NavButton>*/}
-                {/*    <NavButton to="/signup">Sign Up</NavButton>*/}
-                {/*    <NavButton to="/login">Login</NavButton>*/}
-                {/*</NavButtons>*/}
-                {/*<PersonalAreaButton onClick={handlePersonalAreaClick}>*/}
-                {/*    אזור אישי*/}
-                {/*</PersonalAreaButton>*/}
-
-                {/*{showPersonalArea && (*/}
-                {/*    <ModalOverlay>*/}
-                {/*        <ModalContent>*/}
-                {/*            <CloseButton onClick={handleClosePersonalArea}>&times;</CloseButton>*/}
-                {/*            <PersonalArea secret={user.secret}/>*/}
-                {/*        </ModalContent>*/}
-                {/*    </ModalOverlay>*/}
-                {/*)}*/}
             </HomePageContainer>
         </>
     );

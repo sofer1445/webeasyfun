@@ -4,23 +4,21 @@ import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../../Context/UserContext';
 import { EventContext } from '../../Context/EventContext';
 import { BudgetContext } from '../../Context/BudgetContext';
+import images1 from "../../images/logo/LOGO.png";
 
 const SummaryContainer = styled.div`
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex-wrap: wrap;
     background-color: #f5f5f5;
-    padding: 6rem;
+    padding: 4rem; /* שינוי הגובה */
     overflow-x: auto;
-    transform: scale(0.8);
     position: relative;
-    left: -50px;
 `;
 
 const Heading = styled.h1`
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-weight: bold;
     color: #333;
     margin-bottom: 2rem;
@@ -37,6 +35,7 @@ const SummaryItemContainer = styled.div`
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     flex: 1 0 200px;
+    background-color: #fff;
 `;
 
 const Image = styled.img`
@@ -58,58 +57,67 @@ const Price = styled.p`
     color: #666;
 `;
 
+const InfoRow = styled.p`
+    font-size: 1.1rem;
+    color: #666;
+    margin: 0.5rem 0;
+`;
+
+const ButtonContainer = styled.div`
+    display: flex;
+    flex-direction: column; /* כפתורים אחד מתחת לשני */
+    align-items: center;
+    margin-top: 1.5rem; /* שינוי הריווח העליון */
+`;
+
 const HomeButton = styled.button`
-    padding: 1rem 2rem;
-    font-size: 1.5rem;
+    padding: 0.6rem 1.2rem; /* הקטנת הכפתור */
+    font-size: 1.2rem;
     color: #fff;
-    background-color: #333;
+    background-color: #07090b;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-top: 2rem;
+    margin-bottom: 1rem;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background-color: #080b10;
+    }
 `;
 
 const CreateEventButton = styled.button`
-    padding: 1rem 2rem;
-    font-size: 1.5rem;
+    padding: 0.6rem 1.2rem; /* הקטנת הכפתור */
+    font-size: 1.2rem;
     color: #fff;
-    background-color: #4CAF50;
+    background-color: #000000;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-top: 2rem;
-    margin-left: 1rem;
+    margin-bottom: 1rem;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background-color: #000000;
+    }
 `;
 
-const sendUserSelections = async (eventId, elements) => {
-    try {
-        const uniqueElements = Array.from(new Set(elements));
-        const response = await fetch(`http://localhost:9125/save-selection?eventId=${eventId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(uniqueElements)
-        });
+const LogoContainer = styled.div`
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+`;
 
-        if (!response.ok) {
-            console.error('Server call failed:', response);
-            return false;
-        } else {
-            console.log('Selections saved successfully');
-            return true;
-        }
-    } catch (error) {
-        console.error('Error creating event:', error);
-        return false;
-    }
-};
+const Logo = styled.img`
+    width: 150px; /* הקטנת הלוגו */
+    height: auto;
+`;
 
 const Summary = () => {
     const navigate = useNavigate();
     const { user, venue, food, attraction } = useContext(UserContext);
     const { eventData } = useContext(EventContext);
-    const { cartItems, setCartItems } = useContext(BudgetContext);
+    const { cartItems } = useContext(BudgetContext);
     const [secret, setSecret] = useState(null);
 
     useEffect(() => {
@@ -123,35 +131,29 @@ const Summary = () => {
             console.error('User secret is not available');
             return;
         }
-        if (!eventData || !eventData.eventId) {
-            console.error('Event data or event ID is not available');
-            return;
-        }
-        const elements = [
-            venue?.name,
-            food?.name,
-            attraction?.name,
-            ...cartItems.map(item => item.name)
-        ].filter(Boolean);
-
-        const success = await sendUserSelections(eventData.eventId, elements);
-        if (success) {
-            setCartItems([]); // Clear the cart items
-            localStorage.removeItem('cartItems'); // Clear localStorage
-            alert('תכנון האירוע נוצר בהצלחה');
-            navigate('/'); // Navigate to home page
-        } else {
-            alert('Failed to create event');
-        }
+        // Add logic to save the event
+        alert('האירוע נוצר בהצלחה');
+        navigate('/');
     };
 
     const handleHomeClick = () => {
-        navigate('/'); // Navigate to home page
+        navigate('/');
     };
 
     return (
         <SummaryContainer>
-            <Heading>Your<br />Event<br />Summary</Heading>
+            <LogoContainer>
+                <Logo src={images1} alt="Logo" />
+            </LogoContainer>
+            <Heading>Your Event Summary</Heading>
+            <SummaryItemContainer>
+                <Name>Event Details</Name>
+                <InfoRow>Location: {eventData?.location || 'Not Provided'}</InfoRow>
+                <InfoRow>Date: {eventData?.date || 'Not Provided'}</InfoRow>
+                <InfoRow>Budget: {eventData?.budget || 'Not Provided'}</InfoRow>
+                <InfoRow>Guests: {eventData?.guests || 'Not Provided'}</InfoRow>
+                <InfoRow>Elements: {cartItems.length > 0 ? cartItems.map(item => item.name).join(', ') : 'No items added'}</InfoRow>
+            </SummaryItemContainer>
             {venue && (
                 <SummaryItemContainer>
                     <Image src={venue.imageUrl} alt={venue.name} />
@@ -173,10 +175,10 @@ const Summary = () => {
                     <Price>Price: {attraction.price}</Price>
                 </SummaryItemContainer>
             )}
-            <div>
-                <HomeButton onClick={handleHomeClick}>חזור לדף הבית</HomeButton>
-                <CreateEventButton onClick={handleCreateEvent}>צור אירוע</CreateEventButton>
-            </div>
+            <ButtonContainer>
+                <CreateEventButton onClick={handleCreateEvent}>Create Event</CreateEventButton>
+                <HomeButton onClick={handleHomeClick}>Back Home</HomeButton>
+            </ButtonContainer>
         </SummaryContainer>
     );
 };

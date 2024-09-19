@@ -1,9 +1,19 @@
 import React, { useContext, useState } from 'react';
 import { UserContext } from '../../Context/UserContext';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import PersonalArea from '../infoUser/PersonalArea';
-import logoimage from '../../images/logo/LOGO.jpeg';
+import logoimage from '../../images/logo/LOGO.png';
 import axios from 'axios';
+
+// הוספת EditFormInput
+const EditFormInput = styled.input`
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+`;
 
 const ModalOverlay = styled.div`
     position: fixed;
@@ -85,14 +95,6 @@ const EditButton = styled(Button)`
     }
 `;
 
-const EditFormInput = styled.input`
-    width: 100%;
-    padding: 0.5rem;
-    margin-bottom: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-`;
-
 const EditProfileModal = ({ user, onSave, onClose }) => {
     const [username, setUsername] = useState(user.name);
     const [oldPassword, setOldPassword] = useState('');
@@ -163,6 +165,7 @@ const UserProfile = ({ onClose }) => {
     const { user, logout } = useContext(UserContext);
     const [showPersonalArea, setShowPersonalArea] = useState(false);
     const [showEditProfile, setShowEditProfile] = useState(false);
+    const navigate = useNavigate();
 
     const handlePersonalAreaClick = () => {
         setShowPersonalArea(true);
@@ -181,6 +184,11 @@ const UserProfile = ({ onClose }) => {
         setShowEditProfile(false);
     };
 
+    const handleLogoutClick = () => {
+        logout();
+        navigate('/');
+    };
+
     return user ? (
         <ModalOverlay>
             <ModalContent>
@@ -188,7 +196,7 @@ const UserProfile = ({ onClose }) => {
                 <Logo src={logoimage} alt="Logo" />
                 <UserName>Welcome, {user.name}</UserName>
                 <UserEmail>Email: {user.email}</UserEmail>
-                <Button onClick={logout}>Log Out</Button>
+                <Button onClick={handleLogoutClick}>Log Out</Button>
                 <Button onClick={handlePersonalAreaClick}>Personal Area</Button>
                 <EditButton onClick={handleEditProfileClick}>Edit Profile</EditButton>
                 {showPersonalArea && (
