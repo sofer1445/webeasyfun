@@ -93,6 +93,7 @@ const HomePage = () => {
                 <HeaderSection>
                     <Logo>Easy Fun</Logo>
                     <Tagline>Plan your perfect event with us</Tagline>
+                    {user && <p>Welcome, {user.email} !</p>}
                 </HeaderSection>
                 <SearchSection>
                     <SearchInput

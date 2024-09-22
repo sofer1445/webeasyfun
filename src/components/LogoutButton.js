@@ -13,9 +13,9 @@ const Button = styled.button`
 `;
 
 const LogoutButton = () => {
-    const { logout } = useContext(UserContext);
+    const { logout } = useContext(UserContext); // גישה לפונקציית logout מ-UserContext
 
-    return <Button onClick={logout}>Log Out</Button>;
+    return <Button onClick={logout}>Log Out</Button>; // קריאה ל-logout בעת לחיצה על הכפתור
 };
 
 export default LogoutButton;

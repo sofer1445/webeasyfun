@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom'; // For navigation between pages
 import styled from 'styled-components';
-import { BudgetContext } from '../../Context/BudgetContext';
-import { EventContext } from '../../Context/EventContext';
-import Spinner from '../../Styled/Spinner';
-import CardComponent from '../CardComponent'; // Use existing component for rendering food cards
-import DynamicHeading from '../../Styled/DynamicHeading'; // For dynamic heading when loading
-import LoadNewSuggestionsButton from '../LoadNewSuggestionsButton'; // For the "Load New Suggestions" button
-import BackButtonComponent from '../../Styled/BackButton'; // Back button
+import { BudgetContext } from '../../../Context/BudgetContext';
+import { EventContext } from '../../../Context/EventContext';
+import Spinner from '../../../Styled/Spinner';
+import CardComponent from '../../CardComponent'; // Use existing component for rendering food cards
+import DynamicHeading from '../../../Styled/DynamicHeading'; // For dynamic heading when loading
+import LoadNewSuggestionsButton from '../../LoadNewSuggestionsButton'; // For the "Load New Suggestions" button
+import BackButtonComponent from '../../../Styled/BackButton'; // Back button
 
-import highPriceImg from '../../images/foods/highbudget_event_Please.jpg'; // High-price option image
-import mediumPriceImg from '../../images/foods/midbudget_eventPlease.jpg'; // Medium-price option image
-import lowPriceImg from '../../images/foods/lowbudget_eventPlease.jpg'; // Low-price option image
+import highPriceImg from '../../../images/foods/highbudget_event_Please.jpg'; // High-price option image
+import mediumPriceImg from '../../../images/foods/midbudget_eventPlease.jpg'; // Medium-price option image
+import lowPriceImg from '../../../images/foods/lowbudget_eventPlease.jpg'; // Low-price option image
 
 const FoodContainer = styled.div`
     display: flex;

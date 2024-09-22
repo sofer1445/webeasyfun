@@ -1,17 +1,17 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import CardComponent from '../CardComponent';
-import { BudgetContext } from '../../Context/BudgetContext';
-import { EventContext } from '../../Context/EventContext';
-import Spinner from '../../Styled/Spinner';
-import DynamicHeading from '../../Styled/DynamicHeading';
-import LoadNewSuggestionsButton from '../LoadNewSuggestionsButton';
-import BackButtonComponent from '../../Styled/BackButton';
+import CardComponent from '../../CardComponent';
+import { BudgetContext } from '../../../Context/BudgetContext';
+import { EventContext } from '../../../Context/EventContext';
+import Spinner from '../../../Styled/Spinner';
+import DynamicHeading from '../../../Styled/DynamicHeading';
+import LoadNewSuggestionsButton from '../../LoadNewSuggestionsButton';
+import BackButtonComponent from '../../../Styled/BackButton';
 
-import highPriceImg from '../../images/attractions/High_price_attraction.jpg';
-import mediumPriceImg from '../../images/attractions/Mid_price_attraction.jpg';
-import lowPriceImg from '../../images/attractions/Low_price_attraction.jpg';
+import highPriceImg from '../../../images/attractions/High_price_attraction.jpg';
+import mediumPriceImg from '../../../images/attractions/Mid_price_attraction.jpg';
+import lowPriceImg from '../../../images/attractions/Low_price_attraction.jpg';
 
 const AttractionsContainer = styled.div`
     display: flex;

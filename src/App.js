@@ -1,25 +1,24 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useNavigate, Navigate } from 'react-router-dom';
 import HomePage from './components/pages/HomePage';
 import SignUp from './components/pages/SignUp';
 import AboutUs from './components/pages/AboutUs';
 import Contact from './components/pages/Contact';
 import EventPlanning from './components/pages/EventPlanning';
-import SuggestedVenues from './components/pages/SuggestedVenues';
+import SuggestedVenues from './components/pages/AiPages/SuggestedVenues';
 import ShoppingCart from './components/pages/ShoppingCart';
-import FoodOptions from './components/pages/FoodOptions';
-import Attractions from './components/pages/Attractions';
-import Summary from "./components/pages/Summary";
-import Login from "./components/pages/Login";
-import UserProfile from "./components/infoUser/UserProfile";
-import FloatingChat from "./components/chat/FloatingChat";
-import { UserContext } from './Context/UserContext';
+import FoodOptions from './components/pages/AiPages/FoodOptions';
+import Attractions from './components/pages/AiPages/Attractions';
+import Summary from './components/pages/Summary';
+import Login from './components/pages/Login';
+import UserProfile from './components/infoUser/UserProfile';
+import FloatingChat from './components/chat/FloatingChat';
 import { AuthContext } from './Context/AuthContext';
 import { EventProvider } from './Context/EventContext';
 import { BudgetProvider } from './Context/BudgetContext';
 import styled from 'styled-components';
 import Layout from './components/Layout';
-import PreLoginPage from './components/pages/PreLoginPage'; // ייבוא של דף לפני התחברות
+import PreLoginPage from './components/pages/PreLoginPage';
 
 const ShowProfileButton = styled.button`
     position: fixed;
@@ -35,15 +34,24 @@ const ShowProfileButton = styled.button`
 
 const App = () => {
     const [cartItems, setCartItems] = useState([]);
-    const { isAuthenticated } = useContext(AuthContext); // נבדוק את מצב ההתחברות
-    const location = useLocation();
+    const { isAuthenticated } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    // useEffect(() => {
+    //     // בדיקה אם המשתמש לא מחובר והעברה ל-login
+    //     if (!isAuthenticated) {
+    //         navigate('/login');
+    //     }
+    // }, [isAuthenticated, navigate]);
 
     useEffect(() => {
+        // טעינת פריטי עגלה מ-localStorage
         const savedCartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
         setCartItems(savedCartItems);
     }, []);
 
     useEffect(() => {
+        // שמירת עגלת הקניות ב-localStorage
         localStorage.setItem('cartItems', JSON.stringify(cartItems));
     }, [cartItems]);
 
@@ -51,12 +59,13 @@ const App = () => {
         <EventProvider>
             <BudgetProvider>
                 <Layout>
-                    {isAuthenticated ? ( // אם המשתמש מחובר, הצג את העגלה
+                    {/* בדיקת התחברות להצגת תוכן מותאם */}
+                    {isAuthenticated ? (
                         <ShoppingCart cartItems={cartItems} />
                     ) : null}
 
                     <Routes>
-                        {isAuthenticated ? ( // אם המשתמש מחובר, הצג את דף הבית
+                        {isAuthenticated ? (
                             <>
                                 <Route path="/" element={<HomePage />} />
                                 <Route path="/plan-event" element={<EventPlanning />} />
@@ -65,13 +74,14 @@ const App = () => {
                                 <Route path="/attractions" element={<Attractions />} />
                                 <Route path="/summary" element={<Summary />} />
                                 <Route path="/chat" element={<FloatingChat />} />
-
+                                {/*<Route path="*" element={<Navigate to="/" replace />} /> /!* נתיב ברירת מחדל *!/*/}
                             </>
-                        ) : ( // אם המשתמש לא מחובר, הצג את דף ההתחברות
+                        ) : (
                             <>
                                 <Route path="/" element={<PreLoginPage />} />
                                 <Route path="/signup" element={<SignUp />} />
                                 <Route path="/login" element={<Login />} />
+                                {/*<Route path="*" element={<Navigate to="/login" replace />} /> /!* נתיב ברירת מחדל *!/*/}
                             </>
                         )}
                         <Route path="/about" element={<AboutUs />} />

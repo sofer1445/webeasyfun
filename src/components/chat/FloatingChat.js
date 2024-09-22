@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { EventContext } from '../../Context/EventContext';
 import { BudgetContext } from '../../Context/BudgetContext';
 import Spinner from "../../Styled/Spinner";
@@ -130,6 +130,7 @@ const FloatingChat = ({ onClose }) => {
     const [loading, setLoading] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
     const [minimized, setMinimized] = useState(false);
+    const [lastMessage, setLastMessage] = useState(''); // Add state for last message
     const navigate = useNavigate();
     const { eventData } = useContext(EventContext);
     const { budget, cartItems, handleAddToCart } = useContext(BudgetContext);
@@ -161,6 +162,14 @@ const FloatingChat = ({ onClose }) => {
     };
 
     const sendMessage = async (message = userInput, isInitial = false, isRetry = false) => {
+        console.log('sendMessage called with:', { message, isInitial, isRetry });
+
+        if (isRetry) {
+            message = lastMessage; // Use last message when retrying
+        } else {
+            setLastMessage(message); // Store the last message
+        }
+
         if (typeof message !== 'string' || message.trim() === '') return;
 
         let newMessages = [...messages];

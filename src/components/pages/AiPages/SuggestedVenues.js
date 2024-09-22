@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { BudgetContext } from '../../Context/BudgetContext';
-import { EventContext } from '../../Context/EventContext';
-import Spinner from '../../Styled/Spinner';
-import CardComponent from '../CardComponent';
-import DynamicHeading from '../../Styled/DynamicHeading';
-import LoadNewSuggestionsButton from '../LoadNewSuggestionsButton';
-import BackButtonComponent from '../../Styled/BackButton';
+import { BudgetContext } from '../../../Context/BudgetContext';
+import { EventContext } from '../../../Context/EventContext';
+import Spinner from '../../../Styled/Spinner';
+import CardComponent from '../../CardComponent';
+import DynamicHeading from '../../../Styled/DynamicHeading';
+import LoadNewSuggestionsButton from '../../LoadNewSuggestionsButton';
+import BackButtonComponent from '../../../Styled/BackButton';
 
-import highPrice from '../../images/venues/highPrice.jpg';
-import lowPrice from '../../images/venues/lowPrice.jpg';
-import mediumPrice from '../../images/venues/mediumPrice.jpg';
+import highPrice from '../../../images/venues/highPrice.jpg';
+import lowPrice from '../../../images/venues/lowPrice.jpg';
+import mediumPrice from '../../../images/venues/mediumPrice.jpg';
 
 const VenuesContainer = styled.div`
     display: flex;
