@@ -9,15 +9,15 @@ import chatHigh from '../../images/aiChat/chatHigh.webp';
 import chatLow from '../../images/aiChat/chatLow.webp';
 import chatMedium from '../../images/aiChat/chatMid.webp';
 
-// עיצוב הצ'אט המורחב והכפתורים
+// עיצוב הצ'אט והכפתורים
 const ChatHeader = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    background-color: #333; /* רקע אפור כהה */
-    color: #fff; /* טקסט לבן */
-    border-bottom: 1px solid #555; /* גבול אפור כהה יותר */
+    background-color: #333;
+    color: #fff;
+    border-bottom: 1px solid #555;
     border-radius: 12px 12px 0 0;
     font-size: 18px;
     cursor: pointer;
@@ -27,7 +27,7 @@ const Message = styled.div`
     margin-bottom: 15px;
     text-align: ${({$sender}) => ($sender === 'user' ? 'right' : 'left')};
     color: ${({$sender}) => ($sender === 'user' ? '#e9ecef' : '#007bff')};
-    background-color: ${({$sender}) => ($sender === 'user' ? '#444' : '#343a40')}; /* גוון כהה יותר להודעות */
+    background-color: ${({$sender}) => ($sender === 'user' ? '#444' : '#343a40')};
     padding: 12px;
     border-radius: 12px;
     max-width: 80%;
@@ -35,11 +35,11 @@ const Message = styled.div`
 `;
 
 const ChatContainer = styled.div`
-    ${({ $minimized }) => $minimized ? 'height: 50px;' : 'max-height: 70vh;'}; /* הגבהת הצ'אט */
+    ${({ $minimized }) => $minimized ? 'height: 50px;' : 'max-height: 70vh;'};
     position: fixed;
     bottom: 20px;
     left: 20px;
-    width: 450px; /* הרחבת הצ'אט */
+    width: 450px;
     background-color: #1e1e1e;
     border-radius: 10px;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
@@ -56,7 +56,7 @@ const ChatBody = styled.div`
     overflow-y: auto;
     background-color: #2b2b2b;
     display: ${({ $minimized }) => $minimized ? 'none' : 'block'};
-    max-height: calc(100% - 100px); /* התאמה לגובה הכפתורים */
+    max-height: calc(100% - 100px);
 `;
 
 const ChatFooter = styled.div`
@@ -67,7 +67,7 @@ const ChatFooter = styled.div`
     justify-content: space-between;
     background-color: #1e1e1e;
     gap: 8px;
-    min-height: 60px; /* גובה מינימלי לרגל הצ'אט */
+    min-height: 60px;
 `;
 
 const Input = styled.input`
@@ -79,7 +79,7 @@ const Input = styled.input`
     border-radius: 8px;
     outline: none;
     ::placeholder {
-        color: #888; /* טקסט placeholder בגוון אפור */
+        color: #888;
     }
 `;
 
@@ -130,7 +130,9 @@ const FloatingChat = ({ onClose }) => {
     const [loading, setLoading] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
     const [minimized, setMinimized] = useState(false);
-    const [lastMessage, setLastMessage] = useState(''); // Add state for last message
+    const [lastMessage, setLastMessage] = useState(''); // הוספת lastMessage ב-state
+    const [hasFetchedSuggestions, setHasFetchedSuggestions] = useState(false); // משתנה חדש למניעת קריאות כפולות
+    const [hasCardComponent, setHasCardComponent] = useState(false); // משתנה חדש לבדיקת הצגת CardComponent
     const navigate = useNavigate();
     const { eventData } = useContext(EventContext);
     const { budget, cartItems, handleAddToCart } = useContext(BudgetContext);
@@ -198,6 +200,7 @@ const FloatingChat = ({ onClose }) => {
 
             const parsedSuggestions = parseSuggestions(data);
             setSuggestions(parsedSuggestions);
+            setHasCardComponent(parsedSuggestions.length > 0); // עדכון המשתנה בהתאם לתוצאות
 
         } catch (error) {
             if (!isRetry) {
@@ -208,20 +211,54 @@ const FloatingChat = ({ onClose }) => {
         }
     };
 
+    const fetchAdditionalSuggestions = async () => {
+        if (hasFetchedSuggestions || loading) return;
+
+        console.log("Fetching additional suggestions from DB...");
+        setLoading(true);
+
+        try {
+            const response = await fetchWithTimeout(
+                `http://localhost:9125/get-three-event-additions?remainingBudget=${budget}`,
+                { method: 'GET' },
+                15000
+            );
+            console.log("Response from server:", response);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.text();
+            const parsedSuggestions = parseSuggestions(data);
+            setSuggestions(parsedSuggestions);
+            setHasFetchedSuggestions(true);
+            setHasCardComponent(parsedSuggestions.length > 0); // עדכון המשתנה בהתאם לתוצאות
+        } catch (error) {
+            console.error('Error fetching additional suggestions:', error);
+            setSuggestions([]);
+            setHasCardComponent(false); // עדכון המשתנה בהתאם לתוצאות
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const parseSuggestions = (data) => {
-        const suggestionLines = data.trim().split('\n').filter(line => line.match(/Estimated price/i));
+        const suggestionLines = data.trim().split('\n').filter(line => line.match(/Estimated Price/i));
 
         return suggestionLines.map((line, index) => {
-            const nameMatch = line.match(/^\s*Option \d+:\s*([^-]+)\s*-/);
+            // נשתמש ב-regex שיטפל בשמות עם גרשיים או תיאורים מיוחדים
+            const nameMatch = line.match(/^\s*Option \d+:\s*([^']+?)\s*-\s*['"]?([^'"]+)?['"]?,?\s*Estimated Price:\s*\$(\d+)/i);
 
             if (!nameMatch) {
+                console.error(`Invalid data format for suggestion line: ${line}`);
                 return null;
             }
 
             const name = nameMatch[1].trim();
-            const priceMatch = line.match(/Estimated price:\s*\$?(\d+)/i);
-            const price = priceMatch ? parseInt(priceMatch[1], 10) : 0;
-            let image = {
+            const description = nameMatch[2] ? nameMatch[2].trim() : ''; // ייתכן ואין תיאור
+            const price = parseInt(nameMatch[3], 10);
+
+            const image = {
                 high: chatHigh,
                 medium: chatMedium,
                 low: chatLow
@@ -230,16 +267,19 @@ const FloatingChat = ({ onClose }) => {
             return {
                 id: index + 1,
                 name,
+                description,
                 price,
                 image
             };
         }).filter(item => item !== null);
     };
 
+
     const handleSuggestionClick = (suggestion) => {
         handleAddToCart(suggestion);
         setMessages([...messages, { text: `You added: ${suggestion.name}`, sender: 'user' }]);
         setSuggestions([]);
+        setHasCardComponent(false); // עדכון המשתנה בהתאם לתוצאות
     };
 
     const handleKeyDown = (e) => {
@@ -251,6 +291,12 @@ const FloatingChat = ({ onClose }) => {
     const toggleMinimize = () => {
         setMinimized(!minimized);
     };
+
+    useEffect(() => {
+        if (!loading && suggestions.length === 0) {
+            fetchAdditionalSuggestions();
+        }
+    }, [loading, suggestions]);
 
     return (
         <>
@@ -283,7 +329,7 @@ const FloatingChat = ({ onClose }) => {
                 )}
             </ChatContainer>
 
-            {suggestions.length > 0 && (
+            {hasCardComponent ? (
                 <SuggestionsList>
                     {suggestions.map((suggestion) => (
                         <CardComponent
@@ -293,6 +339,8 @@ const FloatingChat = ({ onClose }) => {
                         />
                     ))}
                 </SuggestionsList>
+            ) : (
+                <div>No suggestions available</div>
             )}
         </>
     );
