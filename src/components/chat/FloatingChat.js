@@ -184,7 +184,7 @@ const FloatingChat = ({ onClose }) => {
 
         try {
             const response = await fetchWithTimeout(
-                `http://localhost:9125/chat?message=${encodeURIComponent(message)}&eventDate=${encodeURIComponent(eventData.eventDate)}&guestCount=${encodeURIComponent(eventData.guests)}&totalBudget=${encodeURIComponent(eventData.budget)}&remainingBudget=${encodeURIComponent(budget)}&selectedItems=${encodeURIComponent(cartItems.map(item => item.name).join(', '))}`,
+                `http://localhost:9125/chat?message=${encodeURIComponent(message)}&eventDate=${encodeURIComponent(eventData.eventDate)}&guestCount=${encodeURIComponent(eventData.guests)}&totalBudget=${encodeURIComponent(eventData.budget)}&remainingBudget=${encodeURIComponent(budget)}&selectedItems=${encodeURIComponent(cartItems.map(item => item.name).join(', '))}&location=${encodeURIComponent(eventData.location)}`,
                 { method: 'GET', headers: { 'Content-Type': 'application/json' } },
                 15000
             );
@@ -219,7 +219,7 @@ const FloatingChat = ({ onClose }) => {
 
         try {
             const response = await fetchWithTimeout(
-                `http://localhost:9125/get-three-event-additions?remainingBudget=${budget}`,
+                `http://localhost:9125/get-three-event-additions?remainingBudget=${budget}&location=${encodeURIComponent(eventData.location)}`,
                 { method: 'GET' },
                 15000
             );

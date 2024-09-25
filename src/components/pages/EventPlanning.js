@@ -15,9 +15,9 @@ const EventPlanningContainer = styled.div`
     align-items: flex-start;
     justify-content: space-between;
     height: 100vh;
-    background-color: #f5f5f5;
+    background-color: #f0f0f0;
     overflow-y: auto;
-    padding: 1rem;
+    padding: 2rem;
 
     @media (min-width: 768px) {
         flex-direction: row;
@@ -28,9 +28,13 @@ const FormContainer = styled.div`
     flex: 1;
     margin-right: 1rem;
     width: 100%;
+    max-width: 400px; 
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
     @media (min-width: 768px) {
-        width: 50%;
+        width: 40%; /* שינוי רוחב לצמצום התצוגה */
     }
 `;
 
@@ -39,9 +43,11 @@ const CardsContainer = styled.div`
     overflow-y: auto;
     width: 100%;
     margin-top: 1rem;
+    max-height: 300px; /* גובה קבוע */
+    align-self: flex-start; /* התאמת מיקום תיבות בצד שמאל */
 
     @media (min-width: 768px) {
-        width: 50%;
+        width: 40%; /* שינוי רוחב לצמצום התצוגה */
         margin-top: 0;
     }
 `;
@@ -59,14 +65,14 @@ const EventForm = styled.form`
 
 const Input = styled.input`
     width: 100%;
-    padding: 0.8rem;
-    margin-bottom: 1rem;
+    padding: 0.6rem; /* קצת פחות מרווח */
+    margin-bottom: 0.5rem; /* הפחתת הריווח בין התיבות */
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 1rem;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: border-color 0.3s ease;
-
+    max-width: 100%;
     &:focus {
         border-color: #4c68af;
         outline: none;
@@ -75,13 +81,14 @@ const Input = styled.input`
 
 const Select = styled.select`
     width: 100%;
-    padding: 0.8rem;
-    margin-bottom: 1rem;
+    padding: 0.6rem;
+    margin-bottom: 0.5rem; /* הפחתת הריווח */
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 1rem;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: border-color 0.3s ease;
+    max-width: 100%;
 
     &:focus {
         border-color: #4c68af;
@@ -116,7 +123,7 @@ const Button = styled.button`
     background-color: ${props => props.disabled ? '#999' : '#333'};
     color: #fff;
     border: none;
-    border-radius: 20px;
+    border-radius: 30px;
     padding: 0.8rem 1.5rem;
     font-size: 1rem;
     cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};

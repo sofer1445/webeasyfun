@@ -139,7 +139,7 @@ const Attractions = () => {
 
         try {
             const response = await fetchWithTimeout(
-                `http://localhost:9125/get-three-attractions?remainingBudget=${budget}`,
+                `http://localhost:9125/get-three-attractions?remainingBudget=${budget}&location=${encodeURIComponent(eventData.location)}`,
                 { method: 'GET' },
                 15000
             );

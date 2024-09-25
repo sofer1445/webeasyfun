@@ -101,41 +101,44 @@ const EditProfileModal = ({ user, onSave, onClose }) => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState(''); // הודעת הצלחה
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setErrorMessage('');
 
         if (newPassword !== confirmNewPassword) {
             setErrorMessage("New passwords don't match!");
             return;
         }
-
         try {
-            const url = `http://localhost:9125/update-profile?mail=${encodeURIComponent(user.email)}&oldPassword=${encodeURIComponent(oldPassword)}&newPassword=${encodeURIComponent(newPassword)}&newUsername=${encodeURIComponent(username)}`;
-            const response = await axios.post(url);
+            const url = `http://localhost:9125/update_password?oldPassword=${encodeURIComponent(oldPassword)}&newPassword=${encodeURIComponent(newPassword)}&confirmNewPassword=${encodeURIComponent(confirmNewPassword)}&secret=${encodeURIComponent(user.secret)}`;
+            const response = await axios.get(url);
 
             if (response.status === 200) {
+                alert("Password updated successfully!"); // הצגת הודעת הצלחה
                 onSave(username);
+                onClose(); // סגירת המודל לאחר השמירה
             } else {
-                setErrorMessage(response.data);
+                setErrorMessage(response.data.message || "Failed to update profile");
             }
         } catch (error) {
             setErrorMessage('Failed to update profile');
         }
     };
+
+
     return (
         <ModalOverlay>
             <ModalContent>
                 <CloseButton onClick={onClose}>&times;</CloseButton>
                 <h2>Edit Profile</h2>
+
+                {/* הצגת הודעות שגיאה והצלחה */}
                 {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+                {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
+
                 <form onSubmit={handleSubmit}>
-                    <EditFormInput
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        placeholder="Update Username"
-                    />
                     <EditFormInput
                         type="password"
                         value={oldPassword}
