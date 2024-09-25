@@ -85,7 +85,6 @@ const Attractions = () => {
             )
         ]);
     };
-
     const fetchAttractions = async () => {
         if (buttonLoading) return;
 
@@ -154,6 +153,7 @@ const Attractions = () => {
             if (!rawText || rawText.trim() === '') {
                 console.error("Empty response from server");
                 setAttractions([]);
+                await fetchAttractions(); // קריאה חוזרת לפונקציה fetchAttractions
                 return;
             }
 
@@ -176,7 +176,7 @@ const Attractions = () => {
 
         return attractionLines.map((line, index) => {
             try {
-                const attractionRegex = /^\d+\.\s(.+?)\s-\s(.+?)\s-\sEstimated\sprice:\s?\$?(\d+)/i;
+                const attractionRegex = /^\d+\.\s(.+?)\s-\s(.+?)\s-\s(\d+)\s*$/i;
                 const attractionMatch = line.match(attractionRegex);
 
                 if (!attractionMatch) {
