@@ -151,6 +151,7 @@ const SuggestedVenues = () => {
             if (!rawText || rawText.trim() === '') {
                 console.error("Empty response from server");
                 setVenues([]);
+                await fetchVenues();
                 return;
             }
 

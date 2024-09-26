@@ -148,6 +148,7 @@ const FoodOptions = () => {
             if (!rawText || rawText.trim() === '') {
                 console.error("Empty response from server");
                 setFoods([]);
+                await fetchFoods();
                 return;
             }
 
