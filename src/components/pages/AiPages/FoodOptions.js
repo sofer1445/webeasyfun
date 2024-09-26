@@ -71,7 +71,7 @@ const FoodOptions = () => {
     const [initialFetch, setInitialFetch] = useState(false);
     const [isBackgroundTransparent, setIsBackgroundTransparent] = useState(false); // משתנה חדש לניהול שקיפות התמונה
 
-    const fetchWithTimeout = (url, options, timeout = 10000) => {
+    const fetchWithTimeout = (url, options, timeout = 11000) => {
         return Promise.race([
             fetch(url, options),
             new Promise((_, reject) =>
@@ -171,8 +171,10 @@ const FoodOptions = () => {
 
         return foodLines.map((line, index) => {
             try {
+                // מזהה את השם והתיאור
                 const nameMatch = line.match(/^(.*?)\s*-\s*/);
-                const priceMatch = line.match(/Estimated price:\s*\$(\d+)/i);
+                // מזהה את המחיר
+                const priceMatch = line.match(/Estimated price:\s*\$([\d.]+)/i);
 
                 if (!nameMatch || !priceMatch) {
                     console.error(`Invalid data format for food line: ${line}`);
@@ -180,13 +182,22 @@ const FoodOptions = () => {
                 }
 
                 const name = nameMatch[1].trim();
-                const price = parseInt(priceMatch[1], 10);
-                const description = line.replace(nameMatch[0], '').replace(priceMatch[0], '').trim();
+                const price = parseFloat(priceMatch[1]); // שימוש ב-parseFloat לטיפול במספרים עם נקודה עשרונית
+                // מחליף את שם המנה והמחיר בתיאור מלא ומנקה תווים מיותרים
+                let description = line
+                    .replace(nameMatch[0], '') // הסרת שם המנה
+                    .replace(priceMatch[0], '') // הסרת מחיר
+                    .trim();
+
+                // מסיר תווים מיותרים בסוף התיאור כמו " -"
+                if (description.endsWith(' -')) {
+                    description = description.slice(0, -2);
+                }
 
                 return {
                     id: index + 1,
                     name,
-                    description: description,
+                    description,
                     price,
                     image: price > budget * 0.25 ? highPriceImg : price > budget * 0.15 ? mediumPriceImg : lowPriceImg
                 };
@@ -196,6 +207,7 @@ const FoodOptions = () => {
             }
         }).filter(item => item !== null);
     };
+
 
     const handleFoodClick = (food) => {
         handleAddToCart(food);

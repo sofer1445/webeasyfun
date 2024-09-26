@@ -176,7 +176,8 @@ const Attractions = () => {
 
         return attractionLines.map((line, index) => {
             try {
-                const attractionRegex = /^\d+\.\s(.+?)\s-\s(.+?)\s-\s(\d+)\s*$/i;
+                // רג'קס שמזהה את המבנה עם 'Estimated price: $'
+                const attractionRegex = /^(.*?)\s-\s(.*?)\s-\sEstimated price:\s\$(\d+(\.\d{1,2})?)\s*$/i;
                 const attractionMatch = line.match(attractionRegex);
 
                 if (!attractionMatch) {
@@ -186,8 +187,9 @@ const Attractions = () => {
 
                 const name = attractionMatch[1].trim();
                 const description = attractionMatch[2].trim();
-                const price = parseInt(attractionMatch[3], 10);
+                const price = parseFloat(attractionMatch[3]);
 
+                // בחירת תמונה בהתאם למחיר
                 const image = price > budget * 0.25 ? highPriceImg : price > budget * 0.15 ? mediumPriceImg : lowPriceImg;
 
                 return {
@@ -203,6 +205,8 @@ const Attractions = () => {
             }
         }).filter(item => item !== null);
     };
+
+
 
     const handleAttractionClick = (attraction) => {
         handleAddToCart(attraction);
